@@ -1,0 +1,10 @@
+.git
+node_modules
+dist
+.env*
+.local-data
+private-data
+data
+public/lista-criancas.pdf
+*.sqlite
+*.sqlite-*
