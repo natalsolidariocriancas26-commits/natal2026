@@ -15,7 +15,7 @@ const defaultSettings = {
   deliveryLocation: 'ADEBANKE Espaço Cultural, Rua Durand, 175 - Artur Alvim',
   deliveryContact: '5511945963712',
   donationInfo: 'Faça uma doação. Informe-se pelo WhatsApp da campanha.',
-  introduction: 'Neste Natal, você pode fazer a diferença na vida de uma criança.',
+  introduction: 'Escolha um cartão, prepare um presente e faça uma criança sorrir.',
   reservationMinutes: 20,
   publicFields: ['age', 'clothingSize', 'pantsSize', 'shoeSize', 'toySuggestion'],
 }
@@ -126,6 +126,9 @@ export function createDatabase(filename = process.env.DATABASE_PATH || '.local-d
        @deliveryLocation, @deliveryContact, @donationInfo, @introduction,
        @reservationMinutes, @publicFields)
   `).run({ ...defaultSettings, publicFields: JSON.stringify(defaultSettings.publicFields) })
+
+  db.prepare('UPDATE campaign_settings SET introduction = ? WHERE id = 1 AND introduction = ?')
+    .run(defaultSettings.introduction, 'Neste Natal, você pode fazer a diferença na vida de uma criança.')
 
   const privacyMigration = '2026-09-public-catalog-privacy'
   if (!db.prepare('SELECT 1 FROM app_migrations WHERE id = ?').get(privacyMigration)) {

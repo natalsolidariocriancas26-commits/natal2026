@@ -61,6 +61,7 @@ test('rejeita termos ausentes e reserva não confirmada fora da validade', () =>
 test('nunca exibe nomes no catálogo público, mesmo autorizados ou configurados', () => {
   const { db, child } = setup()
   const initialPublicChild = getPublicData(db).children[0]
+  assert.equal(getPublicData(db).campaign.introduction, 'Escolha um cartão, prepare um presente e faça uma criança sorrir.')
   assert.equal('name' in initialPublicChild, false)
   assert.equal('genderLabel' in initialPublicChild, false)
   assert.equal(initialPublicChild.clothingSize, '6')

@@ -395,7 +395,7 @@ export default function PublicSite() {
           <div className="hero-copy">
             <p className="eyebrow"><Sparkles size={14} /> UMA CORRENTE DE CUIDADO</p>
             <h1>Natal Solidário <span>{campaign?.year || 2026}</span></h1>
-            <p className="hero-lead">{campaign?.introduction || 'Neste Natal, você pode fazer a diferença na vida de uma criança.'}</p>
+            <p className="hero-lead">{campaign?.introduction || 'Escolha um cartão, prepare um presente e faça uma criança sorrir.'}</p>
             <p className="hero-support">Escolha uma criança, torne-se padrinho ou madrinha e prepare um kit especial: roupa, calçado e brinquedo.</p>
             <div className="hero-actions">
               <a className="button button-green" href="#criancas">Apadrinhar uma criança <ArrowRight size={17} /></a>
