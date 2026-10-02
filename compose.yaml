@@ -1,8 +1,8 @@
 services:
   app:
     build: .
-    restart: unless-stopped
     user: "1000:1000"
+    restart: unless-stopped
     env_file: .env.production
     environment:
       DATABASE_PATH: /data/natal-solidario.sqlite
@@ -10,6 +10,7 @@ services:
       PORT: 3001
       PRIVATE_IMPORT_FILE: /run/private-data/children.json
       PRIVATE_PDF_PATH: /data/lista-criancas.pdf
+      ADMIN_PASSWORD: ${ADMIN_PASSWORD:?Defina ADMIN_PASSWORD no arquivo de ambiente}
     volumes:
       - ./data:/data
       - ./private-data:/run/private-data:ro
@@ -32,7 +33,7 @@ services:
       app:
         condition: service_healthy
     environment:
-      SITE_DOMAIN: ${SITE_DOMAIN:?Defina SITE_DOMAIN em .env.production}
+      SITE_DOMAIN: ${SITE_DOMAIN:?Defina SITE_DOMAIN no arquivo de ambiente}
     ports:
       - "80:80"
       - "443:443"

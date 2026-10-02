@@ -30,7 +30,7 @@ Para uma nova campanha ou ambiente, substitua o arquivo privado antes da primeir
 - SQLite (`better-sqlite3`) para crianças, padrinhos, reservas, itens reservados, entregas, configurações e sessões.
 - Reservar e confirmar executa atualizações em transação; um índice único parcial impede que o mesmo cadastro seja reservado simultaneamente por pessoas diferentes.
 - Uma reserva sem confirmação expira após o prazo configurado e devolve a criança à lista.
-- O catálogo nunca recebe o nome completo. Idade, gênero informado, tamanhos, brinquedo e foto podem ser liberados por configuração; fotos ainda exigem autorização individual registrada.
+- O catálogo público mostra por padrão somente o código, a idade, os tamanhos e a sugestão de brinquedo. O primeiro nome só aparece quando a equipe habilita o campo e registra autorização individual; fotos também exigem autorização individual.
 
 O painel fica em `/admin`. A autenticação usa senha configurada por ambiente, cookie `HttpOnly`/`SameSite=Strict` e tokens aleatórios armazenados como hash no banco. Sem `ADMIN_PASSWORD`, o painel permanece desativado.
 

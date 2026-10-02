@@ -1,12 +1,15 @@
-import { mkdirSync, writeFileSync } from 'node:fs'
+import { readFileSync, mkdirSync, writeFileSync } from 'node:fs'
 import { dirname, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { createDatabase, getAdminChildren } from './store.js'
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '..')
-const outputPath = resolve(root, process.env.PRIVATE_PDF_PATH || '.local-data/lista-criancas.pdf')
+const inputPath = resolve(root, 'private-data/children.json')
+const outputPath = resolve(root, process.env.PRIVATE_PDF_PATH || 'data/lista-criancas.pdf')
+const children = JSON.parse(readFileSync(inputPath, 'utf8'))
 const db = createDatabase()
-const children = getAdminChildren(db)
+const adminChildren = getAdminChildren(db)
+const adminByCode = new Map(adminChildren.map((child) => [child.publicCode, child]))
 
 function ascii(value) {
   return String(value || '')
@@ -64,10 +67,12 @@ for (let start = 0; start < children.length; start += rowsPerPage) {
 
   pageChildren.forEach((child, index) => {
     const y = 720 - index * rowHeight
-    const status = child.status === 'SPONSORED' || child.status === 'DELIVERED' ? 'Apadrinhada' : 'Disponivel'
-    const sponsorName = child.guardianName || (status === 'Apadrinhada' ? 'Registro importado' : '-')
-    const sponsorPhone = child.guardianWhatsapp || '-'
-    content += text(child.publicCode, 42, y, 8)
+    const number = String(start + index + 1).padStart(3, '0')
+    const status = child.sponsored ? 'Apadrinhada' : 'Disponivel'
+    const adminChild = adminByCode.get(`NS-${number}`)
+    const sponsorName = adminChild?.guardianName || (child.sponsored ? 'Registro importado' : '-')
+    const sponsorPhone = adminChild?.guardianWhatsapp || '-'
+    content += text(`NS-${number}`, 42, y, 8)
     content += text(child.privateName, 78, y, 7)
     content += text(inferredGender(child.privateName), 205, y, 7)
     content += text(child.ageLabel, 300, y, 7)

@@ -410,7 +410,7 @@ export default function PublicSite() {
             </div>
           </div>
           <div className="hero-visual">
-            <img src="/images/ChatGPT%20Image%2029%20de%20set.%20de%202026,%2021_23_42.png" alt="Imagem da campanha Natal Solidário" />
+            <img src={`${import.meta.env.BASE_URL}images/ChatGPT%20Image%2029%20de%20set.%20de%202026,%2021_23_42.png`} alt="Imagem da campanha Natal Solidário" />
             <div className="visual-caption"><span><Gift size={18} /></span><p>Um kit preparado com carinho<small>Roupa · calçado · brinquedo</small></p></div>
             <div className="visual-stamp">NATAL<br /><b>2026</b></div>
           </div>

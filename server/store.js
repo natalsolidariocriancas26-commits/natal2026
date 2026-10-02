@@ -17,17 +17,7 @@ const defaultSettings = {
   donationInfo: 'Faça uma doação. Informe-se pelo WhatsApp da campanha.',
   introduction: 'Neste Natal, você pode fazer a diferença na vida de uma criança.',
   reservationMinutes: 20,
-  publicFields: ['name', 'gender', 'age', 'clothingSize', 'pantsSize', 'shoeSize', 'toySuggestion'],
-}
-
-const femaleNames = new Set(['ALEXIA', 'AYLA', 'THAYLA', 'EMANUELI', 'JOANA', 'MARIA', 'CIBELE', 'ANGELINA', 'BRENDA', 'BEATRIZ', 'KYARA', 'ANDREZA', 'KATHYANE', 'ESTHER', 'LARA', 'ANA', 'ELISE', 'LUNA', 'LAYLA', 'AYLLA', 'REBECA', 'ANALICE', 'JULIA', 'ELOAH', 'VALENTINA'])
-const maleNames = new Set(['HENRY', 'LEVY', 'LUIZ', 'ARTHUR', 'VICTOR', 'DARK', 'GABRIEL', 'ANTHONY', 'THAUN', 'NATHANAEL', 'HEITOR', 'LAZARO', 'MOISES', 'LUCCA', 'MIGUEL', 'THIERRY', 'GAEL', 'DAVI', 'HYAGO'])
-
-function inferredGender(name) {
-  const firstName = String(name || '').trim().split(/\s+/)[0].toUpperCase()
-  if (femaleNames.has(firstName)) return 'Menina'
-  if (maleNames.has(firstName)) return 'Menino'
-  return ''
+  publicFields: ['age', 'clothingSize', 'pantsSize', 'shoeSize', 'toySuggestion'],
 }
 
 export function createDatabase(filename = process.env.DATABASE_PATH || '.local-data/natal-solidario.sqlite') {
@@ -107,6 +97,10 @@ export function createDatabase(filename = process.env.DATABASE_PATH || '.local-d
       token_hash TEXT PRIMARY KEY,
       expires_at TEXT NOT NULL
     );
+    CREATE TABLE IF NOT EXISTS app_migrations (
+      id TEXT PRIMARY KEY,
+      applied_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
+    );
   `)
 
   const childColumns = db.prepare('PRAGMA table_info(children)').all()
@@ -129,19 +123,23 @@ export function createDatabase(filename = process.env.DATABASE_PATH || '.local-d
        @reservationMinutes, @publicFields)
   `).run({ ...defaultSettings, publicFields: JSON.stringify(defaultSettings.publicFields) })
 
+  const privacyMigration = '2026-09-public-catalog-privacy'
+  if (!db.prepare('SELECT 1 FROM app_migrations WHERE id = ?').get(privacyMigration)) {
+    const migratePrivacyDefaults = db.transaction(() => {
+      db.prepare('UPDATE campaign_settings SET public_fields = ? WHERE id = 1')
+        .run(JSON.stringify(defaultSettings.publicFields))
+      db.prepare('UPDATE children SET name_authorized = 0').run()
+      db.prepare('INSERT INTO app_migrations (id) VALUES (?)').run(privacyMigration)
+    })
+    migratePrivacyDefaults()
+  }
+
   const storedSettings = getSettingsRow(db)
   const storedPublicFields = JSON.parse(storedSettings.public_fields)
   if (!storedPublicFields.includes('age')) {
     db.prepare('UPDATE campaign_settings SET public_fields = ? WHERE id = 1')
       .run(JSON.stringify([...storedPublicFields, 'age']))
   }
-  db.prepare("UPDATE children SET name_authorized = 1 WHERE private_name <> '' AND name_authorized = 0").run()
-  const childrenWithoutGender = db.prepare("SELECT id, private_name FROM children WHERE gender_label = ''").all()
-  for (const child of childrenWithoutGender) {
-    const gender = inferredGender(child.private_name)
-    if (gender) db.prepare('UPDATE children SET gender_label = ? WHERE id = ?').run(gender, child.id)
-  }
-
   return db
 }
 
@@ -351,7 +349,7 @@ export function getPublicData(db) {
       child.name = row.private_name.trim().split(/\s+/)[0]
     }
     if (row.status !== 'RESERVED') {
-      if (settings.publicFields.includes('gender')) child.genderLabel = row.gender_label || inferredGender(row.private_name)
+      if (settings.publicFields.includes('gender')) child.genderLabel = row.gender_label
       if (settings.publicFields.includes('age')) child.ageLabel = row.age_label
     }
     if (row.status === 'AVAILABLE') {

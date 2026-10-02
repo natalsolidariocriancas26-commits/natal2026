@@ -1,4 +1,7 @@
 import assert from 'node:assert/strict'
+import { mkdtempSync, rmSync } from 'node:fs'
+import { tmpdir } from 'node:os'
+import { join } from 'node:path'
 import test from 'node:test'
 import {
   addChild,
@@ -57,7 +60,7 @@ test('exibe somente os dados solicitados e limita o nome ao primeiro nome autori
   const { db, child } = setup()
   const initialPublicChild = getPublicData(db).children[0]
   assert.equal('name' in initialPublicChild, false)
-  assert.equal(initialPublicChild.genderLabel, 'Menina')
+  assert.equal('genderLabel' in initialPublicChild, false)
   assert.equal(initialPublicChild.clothingSize, '6')
   assert.equal(initialPublicChild.pantsSize, '4')
   assert.equal(initialPublicChild.shoeSize, '28')
@@ -72,4 +75,37 @@ test('exibe somente os dados solicitados e limita o nome ao primeiro nome autori
   assert.equal('name' in publicChildren.find((item) => item.id === child.id), false)
   assert.equal(publicChildren.find((item) => item.id === authorizedChild.id).name, 'Nome')
   assert.equal(getAdminChildren(db).find((item) => item.id === authorizedChild.id).nameAuthorized, 1)
+})
+
+test('não autoriza nomes automaticamente ao reabrir o banco', (t) => {
+  const directory = mkdtempSync(join(tmpdir(), 'natal-solidario-'))
+  t.after(() => rmSync(directory, { recursive: true, force: true }))
+  const filename = join(directory, 'campaign.sqlite')
+  const firstDb = createDatabase(filename)
+  addChild(firstDb, { privateName: 'Nome confidencial' })
+  firstDb.close()
+
+  const reopenedDb = createDatabase(filename)
+  assert.equal(getAdminChildren(reopenedDb)[0].nameAuthorized, 0)
+  assert.equal('name' in getPublicData(reopenedDb).children[0], false)
+  reopenedDb.close()
+})
+
+test('migra configurações antigas para manter nomes privados por padrão', (t) => {
+  const directory = mkdtempSync(join(tmpdir(), 'natal-solidario-'))
+  t.after(() => rmSync(directory, { recursive: true, force: true }))
+  const filename = join(directory, 'campaign.sqlite')
+  const firstDb = createDatabase(filename)
+  addChild(firstDb, { privateName: 'Nome confidencial', nameAuthorized: true })
+  updateSettings(firstDb, { publicFields: ['name', 'gender', 'age', 'clothingSize', 'pantsSize', 'shoeSize', 'toySuggestion'] })
+  firstDb.prepare('DELETE FROM app_migrations WHERE id = ?').run('2026-09-public-catalog-privacy')
+  firstDb.close()
+
+  const reopenedDb = createDatabase(filename)
+  const publicChild = getPublicData(reopenedDb).children[0]
+  assert.equal(getAdminChildren(reopenedDb)[0].nameAuthorized, 0)
+  assert.equal('name' in publicChild, false)
+  assert.equal('genderLabel' in publicChild, false)
+  assert.equal(publicChild.clothingSize, '')
+  reopenedDb.close()
 })
