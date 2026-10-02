@@ -431,11 +431,11 @@ export default function PublicSite() {
             </div>
             <div className="gift-stories-grid">
               <figure className="gift-story">
-                <img src="/images/ChatGPT%20Image%2029%20de%20set.%20de%202026,%2017_44_15.png" alt="A alegria de ganhar um brinquedo" loading="lazy" />
+                <img src={`${import.meta.env.BASE_URL}images/ChatGPT%20Image%2029%20de%20set.%20de%202026,%2017_44_15.png`} alt="A alegria de ganhar um brinquedo" loading="lazy" />
                 <figcaption><strong>A alegria de ganhar um brinquedo</strong><a href="https://www.pexels.com/photo/parents-handing-toys-to-smiling-little-boy-7985454/" target="_blank" rel="noreferrer">Foto: George Pak / Pexels</a></figcaption>
               </figure>
               <figure className="gift-story">
-                <img src="/images/ChatGPT%20Image%2029%20de%20set.%20de%202026,%2017_32_28.png" alt="Roupas entregues com carinho em uma ação solidária" loading="lazy" />
+                <img src={`${import.meta.env.BASE_URL}images/ChatGPT%20Image%2029%20de%20set.%20de%202026,%2017_32_28.png`} alt="Roupas entregues com carinho em uma ação solidária" loading="lazy" />
                 <figcaption><strong>Roupas entregues com carinho</strong><a href="https://www.pexels.com/photo/volunteers-handing-clothes-to-children-15311442/" target="_blank" rel="noreferrer">Foto: Akh Taufiq / Pexels</a></figcaption>
               </figure>
             </div>
@@ -460,7 +460,7 @@ export default function PublicSite() {
             <div className="section-heading children-heading">
               <div><p className="eyebrow">O PRÓXIMO PRESENTE PODE SER O SEU</p><h2>Escolha uma criança</h2></div>
               <div className="children-heading-side">
-                <img src="/images/ChatGPT%20Image%2029%20de%20set.%20de%202026,%2017_57_01.png" alt="Crianças participando de uma ação solidária" />
+                <img src={`${import.meta.env.BASE_URL}images/ChatGPT%20Image%2029%20de%20set.%20de%202026,%2017_57_01.png`} alt="Crianças participando de uma ação solidária" />
                 <p>Cada criança aparece com as informações necessárias para montar o kit. Crianças apadrinhadas continuam na lista.</p>
               </div>
             </div>
