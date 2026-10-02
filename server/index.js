@@ -20,6 +20,7 @@ import {
   getSession,
   importChildren,
   recordDelivery,
+  recordEventDelivery,
   reserveChildren,
   updateChild,
   updateSettings,
@@ -167,6 +168,14 @@ export function createApp(db, environment = process.env) {
   admin.post('/children/:id/delivery', (request, response) => {
     try {
       recordDelivery(db, Number(request.params.id), request.body)
+      response.json({ delivered: true })
+    } catch (error) {
+      response.status(400).json({ error: error.message })
+    }
+  })
+  admin.post('/children/:id/event-delivery', (request, response) => {
+    try {
+      recordEventDelivery(db, Number(request.params.id), request.body)
       response.json({ delivered: true })
     } catch (error) {
       response.status(400).json({ error: error.message })

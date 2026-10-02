@@ -301,6 +301,7 @@
 .status-pill > span { width: 5px; height: 5px; border-radius: 50%; background: currentColor; }
 .status-reserved { color: #936e28; border-color: #ecdfbc; background: #faf4e5; }
 .status-sponsored { color: #87545a; border-color: #ead7d8; background: #f9eded; }
+.status-received { color: #547554; border-color: #d5e2d0; background: #edf4eb; }
 .status-delivered { color: #426b5b; border-color: #d2e4da; background: #eaf4ed; }
 .status-cancelled { color: #777; border-color: #ddd; background: #f2f2f2; }
 .child-portrait { height: 132px; display: flex; flex-direction: column; justify-content: center; align-items: center; gap: 5px; overflow: hidden; border-bottom: 1px solid #d8e1d1; color: #b08d4b; background: #e8eee2; }
@@ -429,7 +430,7 @@
 .dashboard-intro > div > p:last-child, .admin-section-heading > div > p:last-child { margin: 0; color: var(--muted); font-size: 11px; }
 .dashboard-intro .button { min-height: 38px; font-size: 10px; }
 .external-arrow { transform: rotate(135deg); }
-.stats-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; }
+.stats-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; }
 .stat-tile { position: relative; min-height: 127px; display: flex; flex-direction: column; align-items: flex-start; padding: 15px; border: 1px solid #e2e2d9; background: #fffefa; }
 .stat-tile > span { color: #6d726a; font-size: 10px; }
 .stat-tile > strong { margin-top: 5px; color: var(--pine-dark); font-family: var(--serif); font-size: 34px; font-weight: 600; line-height: 1; }
@@ -448,6 +449,7 @@
 .segment-available { background: #729476; }
 .segment-reserved { background: #d4ad55; }
 .segment-sponsored { background: #c08479; }
+.segment-received { background: #74966f; }
 .segment-delivered { background: #b99b54; }
 .segment-cancelled { background: #c7c9c1; }
 .progress-legend { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
@@ -457,6 +459,7 @@
 .dot-available { background: #729476; }
 .dot-reserved { background: #d4ad55; }
 .dot-sponsored { background: #c08479; }
+.dot-received { background: #74966f; }
 .dot-delivered { background: #b99b54; }
 .dot-cancelled { background: #c7c9c1; }
 .next-deadline > svg { margin-bottom: 9px; color: var(--gold); }

@@ -39,12 +39,11 @@ type Child = {
   publicCode: string
   genderLabel?: string
   ageLabel?: string
-  status: 'AVAILABLE' | 'RESERVED' | 'SPONSORED' | 'DELIVERED'
+  status: 'AVAILABLE' | 'RESERVED' | 'SPONSORED' | 'RECEIVED' | 'DELIVERED'
   clothingSize?: string
   pantsSize?: string
   shoeSize?: string
   toySuggestion?: string
-  photoUrl?: string
 }
 
 type PublicData = {
@@ -140,8 +139,11 @@ function AppHeader({ contact }: { contact: string }) {
 
 function ChildCard({ child, selected, onToggle }: { child: Child; selected: boolean; onToggle: (id: number) => void }) {
   const available = child.status === 'AVAILABLE'
-  const sponsored = child.status === 'SPONSORED' || child.status === 'DELIVERED'
-  const statusLabel = child.status === 'AVAILABLE' ? 'Disponível' : child.status === 'RESERVED' ? 'Em reserva' : child.status === 'DELIVERED' ? 'Presente entregue' : 'Já tem Padrinho(a)'
+  const sponsored = ['SPONSORED', 'RECEIVED', 'DELIVERED'].includes(child.status)
+  const statusLabel = child.status === 'AVAILABLE' ? 'Disponível'
+    : child.status === 'RESERVED' ? 'Em reserva'
+      : child.status === 'RECEIVED' ? 'Presente recebido'
+        : child.status === 'DELIVERED' ? 'Entregue' : 'Já apadrinhado'
 
   return (
     <article className={`child-card${selected ? ' is-selected' : ''}${available ? '' : ' is-unavailable'}${sponsored ? ' is-sponsored' : ''}`}>
@@ -149,12 +151,9 @@ function ChildCard({ child, selected, onToggle }: { child: Child; selected: bool
         <span className="child-code"><span className="child-tree" aria-hidden="true">🎄</span>{child.publicCode}</span>
         <span className={`status-pill status-${child.status.toLowerCase()}`}><span />{statusLabel}</span>
       </div>
-      {child.photoUrl && <div className="child-portrait">
-        <img src={child.photoUrl} alt={`Foto autorizada de criança ${child.publicCode.replace('NS-', '')}`} />
-      </div>}
       <div className="child-details">
         <div className="child-name-row">
-          <h3>Criança Nº {child.publicCode.replace('NS-', '')}</h3>
+          <h3>Cartão nº {child.publicCode.replace('NS-', '')}</h3>
           <span className="child-smile" aria-hidden="true">{sponsored ? '😄' : '😊'}</span>
         </div>
         <div className="child-meta">
@@ -327,7 +326,7 @@ export default function PublicSite() {
     return data.children.filter((child) => {
       const matchesFilter = filter === 'all' || (filter === 'available'
         ? child.status === 'AVAILABLE'
-        : child.status === 'SPONSORED' || child.status === 'DELIVERED')
+        : ['SPONSORED', 'RECEIVED', 'DELIVERED'].includes(child.status))
       const matchesSearch = child.publicCode.toLowerCase().includes(search.trim().toLowerCase())
       return matchesFilter && matchesSearch
     })
@@ -386,7 +385,7 @@ export default function PublicSite() {
   }
 
   const availableCount = data?.counts.AVAILABLE || 0
-  const sponsoredCount = data?.counts.SPONSORED || 0
+  const sponsoredCount = (data?.counts.SPONSORED || 0) + (data?.counts.RECEIVED || 0) + (data?.counts.DELIVERED || 0)
 
   return (
     <div className="public-site">

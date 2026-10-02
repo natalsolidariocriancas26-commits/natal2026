@@ -8,9 +8,11 @@ import {
   confirmReservation,
   createDatabase,
   getAdminChildren,
+  getDashboard,
   getPublicData,
+  recordDelivery,
+  recordEventDelivery,
   reserveChildren,
-  updateSettings,
 } from '../store.js'
 
 function setup() {
@@ -90,6 +92,30 @@ test('não autoriza nomes automaticamente ao reabrir o banco', (t) => {
   reopenedDb.close()
 })
 
+test('remove nomes e fotos de configurações públicas legadas', (t) => {
+  const directory = mkdtempSync(join(tmpdir(), 'natal-solidario-'))
+  t.after(() => rmSync(directory, { recursive: true, force: true }))
+  const filename = join(directory, 'campaign.sqlite')
+  const firstDb = createDatabase(filename)
+  const child = addChild(firstDb, {
+    privateName: 'Nome confidencial',
+    nameAuthorized: true,
+    photoUrl: 'https://example.org/foto.jpg',
+    photoAuthorized: true,
+  })
+  firstDb.prepare('UPDATE campaign_settings SET public_fields = ? WHERE id = 1')
+    .run(JSON.stringify(['name', 'photo', 'gender', 'age', 'clothingSize', 'shoeSize']))
+  firstDb.close()
+
+  const reopenedDb = createDatabase(filename)
+  const publicChild = getPublicData(reopenedDb).children.find((item) => item.id === child.id)
+  assert.equal('name' in publicChild, false)
+  assert.equal('photoUrl' in publicChild, false)
+  assert.equal(getAdminChildren(reopenedDb)[0].privateName, 'Nome confidencial')
+  assert.equal(getAdminChildren(reopenedDb)[0].photoUrl, 'https://example.org/foto.jpg')
+  reopenedDb.close()
+})
+
 test('migra configurações antigas para manter nomes privados por padrão', (t) => {
   const directory = mkdtempSync(join(tmpdir(), 'natal-solidario-'))
   t.after(() => rmSync(directory, { recursive: true, force: true }))
@@ -108,4 +134,24 @@ test('migra configurações antigas para manter nomes privados por padrão', (t)
   assert.equal('genderLabel' in publicChild, false)
   assert.equal(publicChild.clothingSize, '')
   reopenedDb.close()
+})
+
+test('separa presente recebido pela organização de entrega à criança', () => {
+  const { db, child } = setup()
+  const reservation = reserveChildren(db, guardian, [child.id])
+  confirmReservation(db, reservation.id)
+  assert.throws(() => recordEventDelivery(db, child.id, { deliveredAt: '2026-12-19' }), /recebimento do presente/)
+
+  recordDelivery(db, child.id, { deliveredAt: '2026-12-01', receivedBy: 'Equipe' })
+  const received = getPublicData(db)
+  assert.equal(received.children[0].status, 'RECEIVED')
+  assert.equal(received.counts.RECEIVED, 1)
+  assert.equal(getDashboard(db).counts.RECEIVED, 1)
+
+  recordEventDelivery(db, child.id, { deliveredAt: '2026-12-19' })
+  const delivered = getPublicData(db)
+  assert.equal(delivered.children[0].status, 'DELIVERED')
+  assert.equal(delivered.counts.DELIVERED, 1)
+  assert.equal(getDashboard(db).counts.DELIVERED, 1)
+  assert.throws(() => recordEventDelivery(db, child.id, { deliveredAt: '2026-12-19' }), /já foi registrada/)
 })

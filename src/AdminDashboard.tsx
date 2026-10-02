@@ -52,6 +52,7 @@ type AdminChild = {
   nameAuthorized: number
   photoAuthorized: number
   status: string
+  eventDeliveredAt?: string
   guardianName?: string
   guardianWhatsapp?: string
   deliveredAt?: string
@@ -64,10 +65,13 @@ type Overview = { counts: Record<string, number>; sponsors: Sponsor[]; campaign:
 type Tab = 'resumo' | 'criancas' | 'padrinhos' | 'campanha'
 
 const statusLabels: Record<string, string> = {
-  AVAILABLE: 'Disponível', RESERVED: 'Em reserva', SPONSORED: 'Apadrinhada', DELIVERED: 'Entregue', CANCELLED: 'Cancelada',
+  AVAILABLE: 'Disponível', RESERVED: 'Em reserva', SPONSORED: 'Apadrinhada', RECEIVED: 'Presente recebido', DELIVERED: 'Entregue', CANCELLED: 'Cancelada',
+}
+const editableStatusLabels: Record<string, string> = {
+  AVAILABLE: 'Disponível', RESERVED: 'Em reserva', SPONSORED: 'Apadrinhada', DELIVERED: 'Presente recebido', CANCELLED: 'Cancelada',
 }
 const publicFieldLabels: Record<string, string> = {
-  gender: 'Menino ou menina', age: 'Idade', clothingSize: 'Tamanho da roupa', pantsSize: 'Tamanho da calça', shoeSize: 'Número do calçado', toySuggestion: 'Sugestão de brinquedo', photo: 'Foto autorizada',
+  gender: 'Menino ou menina', age: 'Idade', clothingSize: 'Tamanho da roupa', pantsSize: 'Tamanho da calça', shoeSize: 'Número do calçado', toySuggestion: 'Sugestão de brinquedo',
 }
 const emptyChild = {
   privateName: '', ageLabel: '', genderLabel: '', clothingSize: '', pantsSize: '', shoeSize: '', toySuggestion: '',
@@ -80,7 +84,12 @@ function dateInput(value: string) {
 
 function stateBar(counts: Record<string, number>) {
   const total = Object.values(counts).reduce((sum, count) => sum + count, 0) || 1
-  return ['AVAILABLE', 'RESERVED', 'SPONSORED', 'DELIVERED', 'CANCELLED'].map((status) => ({ status, value: counts[status] || 0, width: `${((counts[status] || 0) / total) * 100}%` }))
+  return ['AVAILABLE', 'RESERVED', 'SPONSORED', 'RECEIVED', 'DELIVERED', 'CANCELLED'].map((status) => ({ status, value: counts[status] || 0, width: `${((counts[status] || 0) / total) * 100}%` }))
+}
+
+function displayStatus(child: Pick<AdminChild, 'status' | 'eventDeliveredAt'>) {
+  if (child.eventDeliveredAt) return 'DELIVERED'
+  return child.status === 'DELIVERED' ? 'RECEIVED' : child.status
 }
 
 function LoginScreen({ configured, onLogin }: { configured: boolean; onLogin: (password: string) => Promise<void> }) {
@@ -136,7 +145,6 @@ function ChildForm({ child, onSave, onClose }: { child: AdminChild | null; onSav
         <h2 id="child-form-title">{child ? `Editar ${child.publicCode}` : 'Cadastrar criança'}</h2>
         <form className="admin-form" onSubmit={submit}>
           <label>Nome completo<input required maxLength={120} value={form.privateName} onChange={(event) => setForm({ ...form, privateName: event.target.value })} /></label>
-          <label className="consent-check"><input type="checkbox" checked={Boolean(form.nameAuthorized)} onChange={(event) => setForm({ ...form, nameAuthorized: event.target.checked })} /><span>Tenho autorização do responsável para publicar o primeiro nome desta criança.</span></label>
           <div className="form-row">
             <label>Idade<input placeholder="Ex.: 4 anos, 19 meses" value={form.ageLabel} onChange={(event) => setForm({ ...form, ageLabel: event.target.value })} /></label>
             <label>Gênero informado<select value={form.genderLabel} onChange={(event) => setForm({ ...form, genderLabel: event.target.value })}><option value="">Não informado</option><option>Menino</option><option>Menina</option><option>Outro</option></select></label>
@@ -150,8 +158,6 @@ function ChildForm({ child, onSave, onClose }: { child: AdminChild | null; onSav
           </div>
           <label>Sugestão de brinquedo<input maxLength={160} value={form.toySuggestion} onChange={(event) => setForm({ ...form, toySuggestion: event.target.value })} /></label>
           <label>Observações internas<textarea rows={3} value={form.observations} onChange={(event) => setForm({ ...form, observations: event.target.value })} /></label>
-          <label>Endereço da foto <span className="optional-label">opcional</span><input type="url" value={form.photoUrl} onChange={(event) => setForm({ ...form, photoUrl: event.target.value })} /></label>
-          <label className="consent-check"><input type="checkbox" checked={Boolean(form.photoAuthorized)} onChange={(event) => setForm({ ...form, photoAuthorized: event.target.checked })} /><span>Tenho autorização documentada do responsável para uso desta foto.</span></label>
           {child && <label>Status<select value={form.status} onChange={(event) => setForm({ ...form, status: event.target.value })}>{Object.entries(statusLabels).map(([value, label]) => <option value={value} key={value}>{label}</option>)}</select></label>}
           {error && <p className="form-error" role="alert">{error}</p>}
           <div className="dialog-actions"><button className="button button-quiet" type="button" onClick={onClose}>Cancelar</button><button className="button button-green" type="submit" disabled={busy}>{busy ? 'Salvando...' : <>Salvar cadastro <Check size={16} /></>}</button></div>
@@ -177,7 +183,7 @@ function DeliveryDialog({ child, onSave, onClose }: { child: AdminChild; onSave:
       <section className="admin-dialog delivery-dialog" role="dialog" aria-modal="true" aria-labelledby="delivery-title">
         <button className="dialog-close icon-button" type="button" aria-label="Fechar" onClick={onClose}><X size={19} /></button>
         <p className="eyebrow">CONTROLE DE ENTREGA · {child.publicCode}</p>
-        <h2 id="delivery-title">Registrar presente entregue</h2>
+        <h2 id="delivery-title">Registrar recebimento do presente</h2>
         <form className="admin-form" onSubmit={submit}>
           <label>Data da entrega<input type="date" required value={form.deliveredAt} onChange={(event) => setForm({ ...form, deliveredAt: event.target.value })} /></label>
           <label>Responsável pelo recebimento<input required value={form.receivedBy} onChange={(event) => setForm({ ...form, receivedBy: event.target.value })} /></label>
@@ -301,8 +307,22 @@ export default function AdminDashboard() {
     if (!deliveryChild) return
     await api(`/api/admin/children/${deliveryChild.id}/delivery`, { method: 'POST', body: JSON.stringify(input) })
     setDeliveryChild(null)
-    setNotice('Entrega registrada.')
+      setNotice('Recebimento do presente registrado.')
     await refresh()
+  }
+
+  async function markEventDelivery(child: AdminChild) {
+    if (!window.confirm(`Registrar a entrega do cartão ${child.publicCode} à criança no evento?`)) return
+    try {
+      await api(`/api/admin/children/${child.id}/event-delivery`, {
+        method: 'POST',
+        body: JSON.stringify({}),
+      })
+      setNotice('Entrega à criança registrada no evento.')
+      await refresh()
+    } catch (error) {
+      setPageError(error instanceof Error ? error.message : 'Não foi possível registrar a entrega.')
+    }
   }
 
   async function saveCampaign(event: FormEvent<HTMLFormElement>) {
@@ -349,7 +369,8 @@ export default function AdminDashboard() {
             <article className="stat-tile stat-total"><span>Total cadastradas</span><strong>{total}</strong><small>crianças na campanha</small><UsersRound size={21} /></article>
             <article className="stat-tile stat-available"><span>Disponíveis</span><strong>{counts.AVAILABLE || 0}</strong><small>aguardando padrinho</small><Gift size={21} /></article>
             <article className="stat-tile stat-sponsored"><span>Apadrinhadas</span><strong>{counts.SPONSORED || 0}</strong><small>presentes a preparar</small><Heart size={21} /></article>
-            <article className="stat-tile stat-delivered"><span>Entregues</span><strong>{counts.DELIVERED || 0}</strong><small>kits recebidos</small><PackageCheck size={21} /></article>
+            <article className="stat-tile stat-delivered"><span>Presentes recebidos</span><strong>{counts.RECEIVED || 0}</strong><small>aguardando o evento</small><PackageCheck size={21} /></article>
+            <article className="stat-tile stat-delivered"><span>Entregues no evento</span><strong>{counts.DELIVERED || 0}</strong><small>destinados às crianças</small><PackageCheck size={21} /></article>
             <article className="stat-tile stat-pending"><span>Pendentes</span><strong>{counts.RESERVED || 0}</strong><small>reserva aguardando confirmação</small><CalendarDays size={21} /></article>
           </div>
           <div className="dashboard-columns">
@@ -368,14 +389,31 @@ export default function AdminDashboard() {
           <div className="admin-section-heading"><div><span className="eyebrow">CADASTRO E DISPONIBILIDADE</span><h2>Crianças da campanha</h2><p>Identificação pública separada dos dados privados.</p></div><button className="button button-green" type="button" onClick={() => setFormChild(null)}><Plus size={17} /> Cadastrar criança</button></div>
           <div className="filter-panel">
             <label className="search-field"><Search size={15} /><input value={search} onChange={(event) => setSearch(event.target.value)} placeholder="Nome ou código" /></label>
-            <select aria-label="Filtrar status" value={statusFilter} onChange={(event) => setStatusFilter(event.target.value)}><option value="">Todos os status</option>{Object.entries(statusLabels).map(([value, label]) => <option key={value} value={value}>{label}</option>)}</select>
+            <select aria-label="Filtrar status" value={statusFilter} onChange={(event) => setStatusFilter(event.target.value)}><option value="">Todos os status</option>{Object.entries(editableStatusLabels).map(([value, label]) => <option key={value} value={value}>{label}</option>)}</select>
             <select aria-label="Filtrar gênero" value={genderFilter} onChange={(event) => setGenderFilter(event.target.value)}><option value="">Todos os gêneros</option><option>Menino</option><option>Menina</option><option>Outro</option></select>
             <input aria-label="Filtrar idade" value={ageFilter} onChange={(event) => setAgeFilter(event.target.value)} placeholder="Idade" />
             <input aria-label="Filtrar tamanho da roupa" value={clothingFilter} onChange={(event) => setClothingFilter(event.target.value)} placeholder="Roupa" />
             <input aria-label="Filtrar número do calçado" value={shoeFilter} onChange={(event) => setShoeFilter(event.target.value)} placeholder="Calçado" />
           </div>
           <div className="admin-table-wrap"><table className="children-table"><thead><tr><th>Criança</th><th>Idade</th><th>Gênero</th><th>Roupa · calçado</th><th>Padrinho(a)</th><th>Telefone</th><th>Status</th><th><span className="sr-only">Ações</span></th></tr></thead><tbody>
-            {children.map((child) => <tr key={child.id}><td><strong>{child.privateName}</strong><small>{child.publicCode}</small></td><td>{child.ageLabel || '—'}</td><td>{child.genderLabel || 'não informado'}</td><td>{child.clothingSize || '—'} · {child.shoeSize || '—'}</td><td>{child.guardianName || (child.status === 'SPONSORED' || child.status === 'DELIVERED' ? 'Registro importado' : '—')}</td><td>{child.guardianWhatsapp || '—'}</td><td><span className={`status-pill status-${child.status.toLowerCase()}`}><span />{statusLabels[child.status] || child.status}</span></td><td><div className="row-actions">{child.status === 'SPONSORED' && <button className="icon-button" type="button" onClick={() => setDeliveryChild(child)} title="Registrar entrega" aria-label={`Registrar entrega de ${child.publicCode}`}><Truck size={17} /></button>}<button className="icon-button" type="button" onClick={() => setFormChild(child)} title="Editar" aria-label={`Editar ${child.publicCode}`}><Pencil size={16} /></button>{(child.status === 'AVAILABLE' || child.status === 'CANCELLED') && <button className="icon-button danger-icon" type="button" onClick={() => void removeChild(child)} title="Excluir" aria-label={`Excluir ${child.publicCode}`}><Trash2 size={16} /></button>}</div></td></tr>)}
+            {children.map((child) => {
+              const currentStatus = displayStatus(child)
+              return <tr key={child.id}>
+                <td><strong>{child.privateName}</strong><small>{child.publicCode}</small></td>
+                <td>{child.ageLabel || '—'}</td>
+                <td>{child.genderLabel || 'não informado'}</td>
+                <td>{child.clothingSize || '—'} · {child.shoeSize || '—'}</td>
+                <td>{child.guardianName || (child.status === 'SPONSORED' || child.status === 'DELIVERED' ? 'Registro importado' : '—')}</td>
+                <td>{child.guardianWhatsapp || '—'}</td>
+                <td><span className={`status-pill status-${currentStatus.toLowerCase()}`}><span />{statusLabels[currentStatus] || currentStatus}</span></td>
+                <td><div className="row-actions">
+                  {child.status === 'SPONSORED' && <button className="icon-button" type="button" onClick={() => setDeliveryChild(child)} title="Registrar recebimento" aria-label={`Registrar recebimento de ${child.publicCode}`}><Truck size={17} /></button>}
+                  {child.status === 'DELIVERED' && !child.eventDeliveredAt && <button className="icon-button" type="button" onClick={() => void markEventDelivery(child)} title="Registrar entrega no evento" aria-label={`Registrar entrega no evento de ${child.publicCode}`}><PackageCheck size={17} /></button>}
+                  <button className="icon-button" type="button" onClick={() => setFormChild(child)} title="Editar" aria-label={`Editar ${child.publicCode}`}><Pencil size={16} /></button>
+                  {(child.status === 'AVAILABLE' || child.status === 'CANCELLED') && <button className="icon-button danger-icon" type="button" onClick={() => void removeChild(child)} title="Excluir" aria-label={`Excluir ${child.publicCode}`}><Trash2 size={16} /></button>}
+                </div></td>
+              </tr>
+            })}
             {!children.length && <tr><td colSpan={8} className="empty-table">Nenhum cadastro corresponde aos filtros.</td></tr>}
           </tbody></table></div>
           <p className="table-count">{children.length} {children.length === 1 ? 'registro' : 'registros'} encontrados</p>
@@ -385,7 +423,7 @@ export default function AdminDashboard() {
           <div className="admin-section-heading"><div><span className="eyebrow">CONTATOS DA CAMPANHA</span><h2>Padrinhos e madrinhas</h2><p>Contatos recebidos durante o apadrinhamento online.</p></div><span className="count-chip">{overview?.sponsors.length || 0} cadastros</span></div>
           <section className="dashboard-section sponsored-children-list"><div className="panel-heading"><div><span className="eyebrow">CONTROLE DOS KITS</span><h3>Crianças já apadrinhadas</h3></div><span className="count-chip">{children.filter((child) => child.status === 'SPONSORED' || child.status === 'DELIVERED').length}</span></div>
             <div className="sponsored-children-table"><div className="sponsored-children-header"><span>Criança</span><span>Padrinho(a)</span><span>Telefone</span><span>Status</span></div>
-              {children.filter((child) => child.status === 'SPONSORED' || child.status === 'DELIVERED').map((child) => <div className="sponsored-children-row" key={child.id}><strong>{child.privateName}</strong><span>{child.guardianName || 'Registro importado'}</span><span>{child.guardianWhatsapp || 'Não registrado'}</span><span className={`status-pill status-${child.status.toLowerCase()}`}><span />{statusLabels[child.status]}</span></div>)}
+              {children.filter((child) => child.status === 'SPONSORED' || child.status === 'DELIVERED').map((child) => { const currentStatus = displayStatus(child); return <div className="sponsored-children-row" key={child.id}><strong>{child.privateName}</strong><span>{child.guardianName || 'Registro importado'}</span><span>{child.guardianWhatsapp || 'Não registrado'}</span><span className={`status-pill status-${currentStatus.toLowerCase()}`}><span />{statusLabels[currentStatus]}</span></div> })}
               {!children.some((child) => child.status === 'SPONSORED' || child.status === 'DELIVERED') && <p className="empty-admin">Nenhuma criança apadrinhada registrada.</p>}
             </div>
           </section>

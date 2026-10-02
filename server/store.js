@@ -4,7 +4,7 @@ import { dirname, resolve } from 'node:path'
 import { randomUUID } from 'node:crypto'
 
 export const childStatuses = ['AVAILABLE', 'RESERVED', 'SPONSORED', 'DELIVERED', 'CANCELLED']
-export const publicFieldNames = ['gender', 'age', 'clothingSize', 'pantsSize', 'shoeSize', 'toySuggestion', 'photo']
+export const publicFieldNames = ['gender', 'age', 'clothingSize', 'pantsSize', 'shoeSize', 'toySuggestion']
 
 const defaultSettings = {
   campaignName: 'Natal Solidário',
@@ -56,6 +56,7 @@ export function createDatabase(filename = process.env.DATABASE_PATH || '.local-d
       photo_url TEXT NOT NULL DEFAULT '',
       name_authorized INTEGER NOT NULL DEFAULT 0 CHECK (name_authorized IN (0, 1)),
       photo_authorized INTEGER NOT NULL DEFAULT 0 CHECK (photo_authorized IN (0, 1)),
+      event_delivered_at TEXT NOT NULL DEFAULT '',
       status TEXT NOT NULL DEFAULT 'AVAILABLE' CHECK (status IN ('AVAILABLE', 'RESERVED', 'SPONSORED', 'DELIVERED', 'CANCELLED')),
       created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
     );
@@ -112,6 +113,9 @@ export function createDatabase(filename = process.env.DATABASE_PATH || '.local-d
     db.prepare('UPDATE campaign_settings SET public_fields = ? WHERE id = 1')
       .run(JSON.stringify(defaultSettings.publicFields))
   }
+  if (!childColumns.some((column) => column.name === 'event_delivered_at')) {
+    db.exec("ALTER TABLE children ADD COLUMN event_delivered_at TEXT NOT NULL DEFAULT ''")
+  }
 
   db.prepare(`
     INSERT OR IGNORE INTO campaign_settings
@@ -136,9 +140,11 @@ export function createDatabase(filename = process.env.DATABASE_PATH || '.local-d
 
   const storedSettings = getSettingsRow(db)
   const storedPublicFields = JSON.parse(storedSettings.public_fields)
-  if (!storedPublicFields.includes('age')) {
+  const safePublicFields = [...new Set(storedPublicFields.filter((field) => publicFieldNames.includes(field)))]
+  if (!safePublicFields.includes('age')) safePublicFields.push('age')
+  if (JSON.stringify(safePublicFields) !== JSON.stringify(storedPublicFields)) {
     db.prepare('UPDATE campaign_settings SET public_fields = ? WHERE id = 1')
-      .run(JSON.stringify([...storedPublicFields, 'age']))
+      .run(JSON.stringify(safePublicFields))
   }
   return db
 }
@@ -344,7 +350,8 @@ export function getPublicData(db) {
   const settings = getSettings(db)
   const rows = db.prepare(`SELECT * FROM children WHERE status != 'CANCELLED' ORDER BY id`).all()
   const children = rows.map((row) => {
-    const child = { id: row.id, publicCode: row.public_code, status: row.status }
+    const status = row.event_delivered_at ? 'DELIVERED' : row.status === 'DELIVERED' ? 'RECEIVED' : row.status
+    const child = { id: row.id, publicCode: row.public_code, status }
     if (row.status !== 'RESERVED') {
       if (settings.publicFields.includes('gender')) child.genderLabel = row.gender_label
       if (settings.publicFields.includes('age')) child.ageLabel = row.age_label
@@ -354,12 +361,13 @@ export function getPublicData(db) {
       if (settings.publicFields.includes('pantsSize')) child.pantsSize = row.pants_size
       if (settings.publicFields.includes('shoeSize')) child.shoeSize = row.shoe_size
       if (settings.publicFields.includes('toySuggestion')) child.toySuggestion = row.toy_suggestion
-      if (settings.publicFields.includes('photo') && row.photo_authorized && row.photo_url) child.photoUrl = row.photo_url
     }
     return child
   })
-  const counts = db.prepare(`SELECT status, COUNT(*) AS count FROM children GROUP BY status`).all()
-    .reduce((result, row) => ({ ...result, [row.status]: row.count }), {})
+  const counts = children.reduce((result, child) => ({
+    ...result,
+    [child.status]: (result[child.status] || 0) + 1,
+  }), {})
   return { campaign: settings, children, counts }
 }
 
@@ -397,7 +405,7 @@ export function getAdminChildren(db, filters = {}) {
       c.gender_label AS genderLabel,
       c.clothing_size AS clothingSize, c.shoe_size AS shoeSize, c.toy_suggestion AS toySuggestion,
       c.observations, c.photo_url AS photoUrl, c.name_authorized AS nameAuthorized,
-      c.photo_authorized AS photoAuthorized, c.status,
+      c.photo_authorized AS photoAuthorized, c.status, c.event_delivered_at AS eventDeliveredAt,
       g.name AS guardianName, g.whatsapp AS guardianWhatsapp,
       d.delivered_at AS deliveredAt, d.received_by AS receivedBy, d.observation AS deliveryObservation
     FROM children c
@@ -433,9 +441,26 @@ export function recordDelivery(db, childId, input, now = new Date()) {
   save()
 }
 
+export function recordEventDelivery(db, childId, input, now = new Date()) {
+  const child = db.prepare('SELECT status, event_delivered_at FROM children WHERE id = ?').get(childId)
+  if (!child || child.status !== 'DELIVERED') throw new Error('Registre o recebimento do presente antes da entrega no evento.')
+  if (child.event_delivered_at) throw new Error('A entrega à criança já foi registrada.')
+  const deliveredAt = String(input.deliveredAt || now.toISOString().slice(0, 10)).slice(0, 20)
+  db.prepare('UPDATE children SET event_delivered_at = ? WHERE id = ?').run(deliveredAt, childId)
+  return true
+}
+
 export function getDashboard(db) {
   expireReservations(db)
-  const counts = db.prepare(`SELECT status, COUNT(*) AS count FROM children GROUP BY status`).all()
+  const counts = db.prepare(`
+    SELECT CASE
+      WHEN event_delivered_at != '' THEN 'DELIVERED'
+      WHEN status = 'DELIVERED' THEN 'RECEIVED'
+      ELSE status
+    END AS status, COUNT(*) AS count
+    FROM children
+    GROUP BY 1
+  `).all()
     .reduce((result, row) => ({ ...result, [row.status]: row.count }), {})
   const sponsors = db.prepare(`
     SELECT g.id, g.name, g.whatsapp, g.email, g.city, r.confirmed_at AS confirmedAt,
