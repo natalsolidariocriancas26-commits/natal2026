@@ -67,7 +67,7 @@ const statusLabels: Record<string, string> = {
   AVAILABLE: 'Disponível', RESERVED: 'Em reserva', SPONSORED: 'Apadrinhada', DELIVERED: 'Entregue', CANCELLED: 'Cancelada',
 }
 const publicFieldLabels: Record<string, string> = {
-  name: 'Primeiro nome', gender: 'Menino ou menina', age: 'Idade', clothingSize: 'Tamanho da roupa', pantsSize: 'Tamanho da calça', shoeSize: 'Número do calçado', toySuggestion: 'Sugestão de brinquedo', photo: 'Foto autorizada',
+  gender: 'Menino ou menina', age: 'Idade', clothingSize: 'Tamanho da roupa', pantsSize: 'Tamanho da calça', shoeSize: 'Número do calçado', toySuggestion: 'Sugestão de brinquedo', photo: 'Foto autorizada',
 }
 const emptyChild = {
   privateName: '', ageLabel: '', genderLabel: '', clothingSize: '', pantsSize: '', shoeSize: '', toySuggestion: '',

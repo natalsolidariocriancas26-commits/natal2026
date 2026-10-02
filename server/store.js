@@ -4,7 +4,7 @@ import { dirname, resolve } from 'node:path'
 import { randomUUID } from 'node:crypto'
 
 export const childStatuses = ['AVAILABLE', 'RESERVED', 'SPONSORED', 'DELIVERED', 'CANCELLED']
-export const publicFieldNames = ['name', 'gender', 'age', 'clothingSize', 'pantsSize', 'shoeSize', 'toySuggestion', 'photo']
+export const publicFieldNames = ['gender', 'age', 'clothingSize', 'pantsSize', 'shoeSize', 'toySuggestion', 'photo']
 
 const defaultSettings = {
   campaignName: 'Natal Solidário',
@@ -345,9 +345,6 @@ export function getPublicData(db) {
   const rows = db.prepare(`SELECT * FROM children WHERE status != 'CANCELLED' ORDER BY id`).all()
   const children = rows.map((row) => {
     const child = { id: row.id, publicCode: row.public_code, status: row.status }
-    if (settings.publicFields.includes('name') && row.name_authorized && row.status !== 'RESERVED') {
-      child.name = row.private_name.trim().split(/\s+/)[0]
-    }
     if (row.status !== 'RESERVED') {
       if (settings.publicFields.includes('gender')) child.genderLabel = row.gender_label
       if (settings.publicFields.includes('age')) child.ageLabel = row.age_label

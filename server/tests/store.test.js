@@ -56,7 +56,7 @@ test('rejeita termos ausentes e reserva não confirmada fora da validade', () =>
   assert.equal(getPublicData(db).children[0].status, 'AVAILABLE')
 })
 
-test('exibe somente os dados solicitados e limita o nome ao primeiro nome autorizado', () => {
+test('nunca exibe nomes no catálogo público, mesmo autorizados ou configurados', () => {
   const { db, child } = setup()
   const initialPublicChild = getPublicData(db).children[0]
   assert.equal('name' in initialPublicChild, false)
@@ -67,13 +67,12 @@ test('exibe somente os dados solicitados e limita o nome ao primeiro nome autori
   assert.equal(initialPublicChild.toySuggestion, 'Boneca')
   assert.equal(initialPublicChild.ageLabel, '4 anos')
 
-  updateSettings(db, { publicFields: ['name', 'gender', 'clothingSize', 'pantsSize', 'shoeSize', 'toySuggestion'] })
-  assert.equal('name' in getPublicData(db).children[0], false)
-
   const authorizedChild = addChild(db, { privateName: 'Nome autorizado completo', nameAuthorized: true })
+  db.prepare('UPDATE campaign_settings SET public_fields = ? WHERE id = 1')
+    .run(JSON.stringify(['name', 'gender', 'age', 'clothingSize', 'pantsSize', 'shoeSize', 'toySuggestion']))
   const publicChildren = getPublicData(db).children
   assert.equal('name' in publicChildren.find((item) => item.id === child.id), false)
-  assert.equal(publicChildren.find((item) => item.id === authorizedChild.id).name, 'Nome')
+  assert.equal('name' in publicChildren.find((item) => item.id === authorizedChild.id), false)
   assert.equal(getAdminChildren(db).find((item) => item.id === authorizedChild.id).nameAuthorized, 1)
 })
 
@@ -97,7 +96,8 @@ test('migra configurações antigas para manter nomes privados por padrão', (t)
   const filename = join(directory, 'campaign.sqlite')
   const firstDb = createDatabase(filename)
   addChild(firstDb, { privateName: 'Nome confidencial', nameAuthorized: true })
-  updateSettings(firstDb, { publicFields: ['name', 'gender', 'age', 'clothingSize', 'pantsSize', 'shoeSize', 'toySuggestion'] })
+  firstDb.prepare('UPDATE campaign_settings SET public_fields = ? WHERE id = 1')
+    .run(JSON.stringify(['name', 'gender', 'age', 'clothingSize', 'pantsSize', 'shoeSize', 'toySuggestion']))
   firstDb.prepare('DELETE FROM app_migrations WHERE id = ?').run('2026-09-public-catalog-privacy')
   firstDb.close()
 

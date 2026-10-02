@@ -37,7 +37,6 @@ type Campaign = {
 type Child = {
   id: number
   publicCode: string
-  name?: string
   genderLabel?: string
   ageLabel?: string
   status: 'AVAILABLE' | 'RESERVED' | 'SPONSORED' | 'DELIVERED'
@@ -151,11 +150,11 @@ function ChildCard({ child, selected, onToggle }: { child: Child; selected: bool
         <span className={`status-pill status-${child.status.toLowerCase()}`}><span />{statusLabel}</span>
       </div>
       {child.photoUrl && <div className="child-portrait">
-        <img src={child.photoUrl} alt={`Foto autorizada de ${child.name || `criança ${child.publicCode.replace('NS-', '')}`}`} />
+        <img src={child.photoUrl} alt={`Foto autorizada de criança ${child.publicCode.replace('NS-', '')}`} />
       </div>}
       <div className="child-details">
         <div className="child-name-row">
-          <h3>{child.name || `Criança Nº ${child.publicCode.replace('NS-', '')}`}</h3>
+          <h3>Criança Nº {child.publicCode.replace('NS-', '')}</h3>
           <span className="child-smile" aria-hidden="true">{sponsored ? '😄' : '😊'}</span>
         </div>
         <div className="child-meta">
