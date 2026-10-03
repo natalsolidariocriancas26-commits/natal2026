@@ -36,22 +36,33 @@ export async function api<T>(
     const children = cards
       .filter((row) => row[0] !== '' && row[0] !== undefined)
       .map((row) => {
-        const ns = String(row[0] || '')
-        const nome = String(row[1] || '')
-        const sexo = String(row[2] || '')
-        const idade = String(row[3] || '')
-        const roupa = String(row[4] || '')
-        const calcado = String(row[5] || '')
-        const statusText = String(row[6] || '').toLowerCase().trim()
+        const ns = String(row[0] ?? '').trim()
+        const nome = String(row[1] ?? '').trim()
+        const sexo = String(row[2] ?? '').trim()
+        const idade = String(row[3] ?? '').trim()
+        const roupa = String(row[4] ?? '').trim()
+        const calcado = String(row[5] ?? '').trim()
+
+        // Normaliza o status vindo da planilha
+        const statusText = String(row[6] ?? '')
+          .trim()
+          .toLowerCase()
+          .normalize('NFD')
+          .replace(/[\u0300-\u036f]/g, '')
 
         let status:
           | 'AVAILABLE'
           | 'SPONSORED'
           | 'RECEIVED'
 
-        if (statusText.includes('presente recebido')) {
+        if (
+          statusText.includes('presente recebido') ||
+          statusText.includes('presente_recebido')
+        ) {
           status = 'RECEIVED'
-        } else if (statusText.includes('apadrinh')) {
+        } else if (
+          statusText.includes('apadrinh')
+        ) {
           status = 'SPONSORED'
         } else {
           status = 'AVAILABLE'
@@ -71,10 +82,20 @@ export async function api<T>(
       })
 
     const counts = {
-      AVAILABLE: children.filter((child) => child.status === 'AVAILABLE').length,
+      AVAILABLE: children.filter(
+        (child) => child.status === 'AVAILABLE',
+      ).length,
+
       RESERVED: 0,
-      SPONSORED: children.filter((child) => child.status === 'SPONSORED').length,
-      RECEIVED: children.filter((child) => child.status === 'RECEIVED').length,
+
+      SPONSORED: children.filter(
+        (child) => child.status === 'SPONSORED',
+      ).length,
+
+      RECEIVED: children.filter(
+        (child) => child.status === 'RECEIVED',
+      ).length,
+
       DELIVERED: 0,
     }
 
@@ -87,17 +108,23 @@ export async function api<T>(
         deliveryDeadline: '2026-11-30',
         deliveryLocation: 'ADEBANKE Espaço Cultural, Artur Alvim',
         deliveryContact: '5511945963712',
-        donationInfo: 'Faça parte desta corrente de solidariedade.',
+        donationInfo:
+          'Faça parte desta corrente de solidariedade.',
         introduction:
           'Escolha um cartão, prepare um presente e faça uma criança sorrir.',
         reservationMinutes: 30,
       },
+
       children,
+
       counts,
     } as T
   }
 
-  if (path === '/api/reservations' && options.method === 'POST') {
+  if (
+    path === '/api/reservations' &&
+    options.method === 'POST'
+  ) {
     const body = JSON.parse(String(options.body || '{}'))
 
     const childIds = Array.isArray(body.childIds)
@@ -126,15 +153,18 @@ export async function api<T>(
 
     if (!result.sucesso) {
       throw new Error(
-        result.mensagem || 'Não foi possível reservar o cartão.'
+        result.mensagem ||
+          'Não foi possível reservar o cartão.',
       )
     }
 
     return {
       id: cartao,
+
       expiresAt: new Date(
-        Date.now() + 30 * 60 * 1000
+        Date.now() + 30 * 60 * 1000,
       ).toISOString(),
+
       children: [
         {
           id: cartao,
@@ -167,6 +197,7 @@ export async function api<T>(
   const response = await fetch(path, {
     ...options,
     credentials: 'same-origin',
+
     headers: {
       ...(options.body
         ? { 'Content-Type': 'application/json' }
@@ -179,11 +210,14 @@ export async function api<T>(
     return undefined as T
   }
 
-  const body = await response.json() as T & { error?: string }
+  const body = await response.json() as T & {
+    error?: string
+  }
 
   if (!response.ok) {
     throw new Error(
-      body.error || 'Não foi possível concluir a solicitação.',
+      body.error ||
+        'Não foi possível concluir a solicitação.',
     )
   }
 
