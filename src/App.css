@@ -731,4 +731,91 @@
   .form-row { grid-template-columns: 1fr; }
   .dialog-actions { flex-direction: column-reverse; }
   .dialog-actions .button { width: 100%; }
+}/* Natal Solidário 2026 — refinamento visual */
+
+.campaign-hero {
+  background:
+    radial-gradient(circle at 8% 18%, #f5ead2 0, transparent 28%),
+    radial-gradient(circle at 92% 70%, #e8f0e3 0, transparent 30%);
+}
+
+.hero-copy h1 {
+  letter-spacing: -2.2px;
+}
+
+.button-green {
+  box-shadow: 0 7px 18px #234c351f;
+}
+
+.children-section {
+  background:
+    linear-gradient(180deg, #f4f1e8 0%, #eef2e9 100%);
+}
+
+.children-grid {
+  gap: 18px;
+}
+
+.child-card:not(.is-unavailable) {
+  border-color: #4f7e4f;
+  box-shadow: 0 8px 20px #25453316;
+}
+
+.child-card:not(.is-unavailable):hover {
+  border-color: #b28b43;
+  box-shadow: 0 12px 25px #25453320;
+}
+
+.child-card.is-selected {
+  border-color: var(--red);
+  box-shadow: 0 0 0 2px #96383d2b, 0 10px 25px #25453320;
+}
+
+.status-available {
+  color: #35683d;
+  border-color: #c7dec6;
+  background: #edf6ec;
+}
+
+.select-child {
+  min-height: 40px;
+  padding: 0 10px;
+  border-radius: 3px;
+  background: #f1f6ed;
+}
+
+.select-child:hover {
+  color: #fff;
+  background: var(--pine);
+}
+
+.select-child.selected {
+  color: #fff;
+  background: var(--red);
+}
+
+.selection-bar {
+  border-top: 2px solid #c6a65d;
+}
+
+@media (max-width: 760px) {
+  .campaign-hero {
+    background:
+      radial-gradient(circle at 90% 15%, #f5ead2 0, transparent 32%),
+      linear-gradient(180deg, #fffdf8 0%, #f7f4ea 100%);
+  }
+
+  .children-grid {
+    gap: 14px;
+  }
+
+  .child-card:not(.is-unavailable) {
+    box-shadow: 0 7px 18px #25453318;
+  }
+
+  .select-child {
+    min-height: 46px;
+    justify-content: center;
+    font-size: 12px;
+  }
 }
