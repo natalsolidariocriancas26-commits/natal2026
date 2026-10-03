@@ -137,39 +137,112 @@ function AppHeader({ contact }: { contact: string }) {
   )
 }
 
-function ChildCard({ child, selected, onToggle }: { child: Child; selected: boolean; onToggle: (id: number) => void }) {
+function ChildCard({
+  child,
+  selected,
+  onToggle,
+}: {
+  child: Child
+  selected: boolean
+  onToggle: (id: number) => void
+}) {
   const available = child.status === 'AVAILABLE'
   const sponsored = ['SPONSORED', 'RECEIVED', 'DELIVERED'].includes(child.status)
-  const statusLabel = child.status === 'AVAILABLE' ? 'Disponível'
-    : child.status === 'RESERVED' ? 'Em reserva'
-      : child.status === 'RECEIVED' ? 'Presente recebido'
-        : child.status === 'DELIVERED' ? 'Entregue' : 'Já apadrinhado'
+
+  const statusLabel =
+    child.status === 'AVAILABLE'
+      ? 'Disponível'
+      : child.status === 'RESERVED'
+        ? 'Em reserva'
+        : child.status === 'RECEIVED'
+          ? 'Presente recebido'
+          : child.status === 'DELIVERED'
+            ? 'Entregue'
+            : 'Já apadrinhado'
 
   return (
-    <article className={`child-card${selected ? ' is-selected' : ''}${available ? '' : ' is-unavailable'}${sponsored ? ' is-sponsored' : ''}`}>
+    <article
+      className={`child-card${selected ? ' is-selected' : ''}${available ? '' : ' is-unavailable'}${sponsored ? ' is-sponsored' : ''}`}
+    >
       <div className="child-card-top">
-        <span className="child-code"><span className="child-tree" aria-hidden="true">🎄</span>{child.publicCode}</span>
-        <span className={`status-pill status-${child.status.toLowerCase()}`}><span />{statusLabel}</span>
+        <span className="child-code">
+          <span className="child-tree" aria-hidden="true">🎄</span>
+          {child.publicCode}
+        </span>
+
+        <span className={`status-pill status-${child.status.toLowerCase()}`}>
+          <span />
+          {statusLabel}
+        </span>
       </div>
+
       <div className="child-details">
         <div className="child-name-row">
-          <h3>Cartão nº {child.publicCode.replace('NS-', '')}</h3>
-          <span className="child-smile" aria-hidden="true">{sponsored ? '😄' : '😊'}</span>
+          <div>
+            <span className="card-label">CARTÃO</span>
+            <h3>Nº {child.publicCode.replace('NS-', '')}</h3>
+          </div>
+
+          <span className="child-smile" aria-hidden="true">
+            {sponsored ? '😄' : '🎁'}
+          </span>
         </div>
+
         <div className="child-meta">
-          <span>{child.genderLabel || 'Menino ou menina'}</span>
-          <span>{child.ageLabel || 'Idade não informada'}</span>
+          <span>
+            <strong>Gênero</strong>
+            {child.genderLabel || 'Não informado'}
+          </span>
+
+          <span>
+            <strong>Idade</strong>
+            {child.ageLabel || 'Não informada'}
+          </span>
         </div>
+
         <div className="gift-specs">
-          {child.clothingSize && <span><i>ROUPA</i> tam. {child.clothingSize}</span>}
-          {child.shoeSize && <span><i>CALÇADO</i> nº {child.shoeSize}</span>}
+          <span>
+            <i>ROUPA</i>
+            {child.clothingSize ? `Tamanho ${child.clothingSize}` : 'A confirmar'}
+          </span>
+
+          <span>
+            <i>CALÇADO</i>
+            {child.shoeSize ? `Nº ${child.shoeSize}` : 'A confirmar'}
+          </span>
         </div>
-        <div className="child-toy"><i>BRINQUEDO</i><span>{child.toySuggestion || 'A definir'}</span></div>
+
+        <div className="child-toy">
+          <i>🎁 BRINQUEDO</i>
+          <span>{child.toySuggestion || 'A escolher'}</span>
+        </div>
+
         {available ? (
-          <button className={selected ? 'select-child selected' : 'select-child'} type="button" onClick={() => onToggle(child.id)} aria-pressed={selected}>
-            {selected ? <><Check size={16} /> Selecionada</> : <>Quero apadrinhar <ArrowRight size={15} /></>}
+          <button
+            className={selected ? 'select-child selected' : 'select-child'}
+            type="button"
+            onClick={() => onToggle(child.id)}
+            aria-pressed={selected}
+          >
+            {selected ? (
+              <>
+                <Check size={16} />
+                Cartão selecionado
+              </>
+            ) : (
+              <>
+                Quero este cartão
+                <ArrowRight size={15} />
+              </>
+            )}
           </button>
-        ) : <p className="unavailable-note">{sponsored ? 'Obrigado a quem já apadrinhou esta criança.' : 'Agradecemos por fazer parte desta corrente.'}</p>}
+        ) : (
+          <p className="unavailable-note">
+            {sponsored
+              ? 'Obrigado a quem já apadrinhou esta criança. ❤️'
+              : 'Este cartão está temporariamente reservado.'}
+          </p>
+        )}
       </div>
     </article>
   )
