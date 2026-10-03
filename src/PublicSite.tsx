@@ -163,9 +163,8 @@ function ChildCard({
       className={`child-card${selected ? ' is-selected' : ''}${available ? '' : ' is-unavailable'}${sponsored ? ' is-sponsored' : ''}`}
     >
       <div className="child-card-top">
-        <span className="child-code">
-          <span className="child-tree" aria-hidden="true">🎄</span>
-          {child.publicCode}
+        <span className="child-code" aria-label={`Cartão ${child.publicCode}`}>
+          🎄 {child.publicCode}
         </span>
 
         <span className={`status-pill status-${child.status.toLowerCase()}`}>
