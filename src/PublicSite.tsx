@@ -35,11 +35,12 @@ type Campaign = {
 }
 
 type Child = {
-  id: number
+  id: string
   publicCode: string
+  name?: string
   genderLabel?: string
   ageLabel?: string
-  status: 'AVAILABLE' | 'RESERVED' | 'SPONSORED' | 'RECEIVED' | 'DELIVERED'
+  status: 'AVAILABLE' | 'SPONSORED' | 'RECEIVED'
   clothingSize?: string
   pantsSize?: string
   shoeSize?: string
@@ -144,21 +145,18 @@ function ChildCard({
 }: {
   child: Child
   selected: boolean
-  onToggle: (id: number) => void
+  onToggle: (id: string) => void
 }) {
   const available = child.status === 'AVAILABLE'
-  const sponsored = ['SPONSORED', 'RECEIVED', 'DELIVERED'].includes(child.status)
+  const sponsored = child.status === 'SPONSORED'
+  const received = child.status === 'RECEIVED'
 
   const statusLabel =
     child.status === 'AVAILABLE'
       ? 'Disponível'
-      : child.status === 'RESERVED'
-        ? 'Em reserva'
-        : child.status === 'RECEIVED'
-          ? 'Presente recebido'
-          : child.status === 'DELIVERED'
-            ? 'Entregue'
-            : 'Já apadrinhado'
+      : child.status === 'RECEIVED'
+        ? 'Presente recebido'
+        : 'Apadrinhada'
 
   return (
     <article
@@ -167,7 +165,7 @@ function ChildCard({
       <div className="child-card-top">
         <span className="child-code">
           <span className="child-tree" aria-hidden="true">🎄</span>
-          {child.publicCode}
+          🎄
         </span>
 
         <span className={`status-pill status-${child.status.toLowerCase()}`}>
@@ -179,12 +177,12 @@ function ChildCard({
       <div className="child-details">
         <div className="child-name-row">
           <div>
-            <span className="card-label">CARTÃO</span>
-            <h3>Nº {child.publicCode.replace('NS-', '')}</h3>
+            <span className="card-label">CRIANÇA</span>
+            <h3>{child.name || 'Nome não informado'}</h3>
           </div>
 
           <span className="child-smile" aria-hidden="true">
-            {sponsored ? '😄' : '🎁'}
+            {received ? '📦' : sponsored ? '❤️' : '🎁'}
           </span>
         </div>
 
@@ -238,9 +236,9 @@ function ChildCard({
           </button>
         ) : (
           <p className="unavailable-note">
-            {sponsored
-              ? 'Obrigado a quem já apadrinhou esta criança. ❤️'
-              : 'Este cartão está temporariamente reservado.'}
+            {received
+              ? 'Presente recebido. Obrigado por fazer parte desta corrente. ❤️'
+              : 'Obrigado a quem já apadrinhou esta criança. ❤️'}
           </p>
         )}
       </div>
@@ -362,7 +360,7 @@ export default function PublicSite() {
   const [loadError, setLoadError] = useState('')
   const [search, setSearch] = useState('')
   const [filter, setFilter] = useState<'all' | 'available' | 'sponsored'>('all')
-  const [selected, setSelected] = useState<number[]>([])
+  const [selected, setSelected] = useState<string[]>([])
   const [flow, setFlow] = useState<'contact' | 'confirm' | 'done' | null>(null)
   const [form, setForm] = useState<ContactForm>(emptyForm)
   const [reservation, setReservation] = useState<Reservation | null>(null)
@@ -399,13 +397,13 @@ export default function PublicSite() {
     return data.children.filter((child) => {
       const matchesFilter = filter === 'all' || (filter === 'available'
         ? child.status === 'AVAILABLE'
-        : ['SPONSORED', 'RECEIVED', 'DELIVERED'].includes(child.status))
+        : ['SPONSORED', 'RECEIVED'].includes(child.status))
       const matchesSearch = child.publicCode.toLowerCase().includes(search.trim().toLowerCase())
       return matchesFilter && matchesSearch
     })
   }, [data, filter, search])
 
-  function toggleChild(id: number) {
+  function toggleChild(id: string) {
     setSelected((current) => current.includes(id) ? current.filter((selectedId) => selectedId !== id) : [...current, id])
   }
 
@@ -541,7 +539,7 @@ export default function PublicSite() {
                 <button className={filter === 'all' ? 'active' : ''} type="button" onClick={() => setFilter('all')}>Todas</button>
                 <button className={filter === 'sponsored' ? 'active' : ''} type="button" onClick={() => setFilter('sponsored')}>Já apadrinhadas</button>
               </div>
-              <label className="search-field"><Search size={16} /><input value={search} onChange={(event) => setSearch(event.target.value)} placeholder="Buscar código" aria-label="Buscar criança pelo código" /><kbd>⌘ K</kbd></label>
+              <label className="search-field"><Search size={16} /><input value={search} onChange={(event) => setSearch(event.target.value)} placeholder="Buscar criança" aria-label="Buscar criança pelo nome" /><kbd>⌘ K</kbd></label>
             </div>
             {loading && <div className="catalog-message">Carregando a lista da campanha...</div>}
             {!loading && loadError && <div className="catalog-message catalog-error"><p>{loadError}</p><button className="text-button" type="button" onClick={() => void loadCampaign()}>Tentar novamente</button></div>}
