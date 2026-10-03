@@ -18,8 +18,11 @@ export async function api<T>(
   options: RequestInit = {},
 ): Promise<T> {
 
-  // Busca os cartões diretamente da nossa planilha
-  if (path === '/api/public/campaign' && (!options.method || options.method === 'GET')) {
+  // CARREGAR CARTÕES
+  if (
+    path === '/api/public/campaign' &&
+    (!options.method || options.method === 'GET')
+  ) {
     const response = await fetch(APPS_SCRIPT_URL, {
       method: 'GET',
       cache: 'no-store',
@@ -30,7 +33,6 @@ export async function api<T>(
     }
 
     const rows = await response.json() as SheetRow[]
-
     const [, ...cards] = rows
 
     const children = cards
@@ -38,7 +40,12 @@ export async function api<T>(
       .map((row, index) => {
         const statusText = String(row[6] || '').toLowerCase()
 
-        let status: 'AVAILABLE' | 'RESERVED' | 'SPONSORED' | 'RECEIVED' | 'DELIVERED'
+        let status:
+          | 'AVAILABLE'
+          | 'RESERVED'
+          | 'SPONSORED'
+          | 'RECEIVED'
+          | 'DELIVERED'
 
         if (statusText.includes('reserv')) {
           status = 'RESERVED'
@@ -82,7 +89,8 @@ export async function api<T>(
         deliveryLocation: 'ADEBANKE Espaço Cultural, Artur Alvim',
         deliveryContact: '5511945963712',
         donationInfo: 'Faça parte desta corrente de solidariedade.',
-        introduction: 'Escolha um cartão, prepare um presente e faça uma criança sorrir.',
+        introduction:
+          'Escolha um cartão, prepare um presente e faça uma criança sorrir.',
         reservationMinutes: 30,
       },
       children,
@@ -90,23 +98,56 @@ export async function api<T>(
     } as T
   }
 
-  // Mantém temporariamente as outras chamadas do sistema antigo.
-  // Vamos substituir essa parte no próximo passo.
+  // RESERVAR CARTÃO
+  if (path === '/api/reservations' && options.method === 'POST') {
+    const body = JSON.parse(String(options.body || '{}'))
+
+    const response = await fetch(APPS_SCRIPT_URL, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'text/plain;charset=utf-8',
+      },
+      body: JSON.stringify({
+        cartao: body.cartao,
+        responsavel: body.responsavel,
+        whatsapp: body.whatsapp,
+      }),
+    })
+
+    const result = await response.json()
+
+    if (!result.sucesso) {
+      throw new Error(result.mensagem || 'Não foi possível reservar o cartão.')
+    }
+
+    return {
+      id: String(body.cartao),
+      status: 'RESERVED',
+    } as T
+  }
+
+  // OUTRAS REQUISIÇÕES
   const response = await fetch(path, {
     ...options,
     credentials: 'same-origin',
     headers: {
-      ...(options.body ? { 'Content-Type': 'application/json' } : {}),
+      ...(options.body
+        ? { 'Content-Type': 'application/json' }
+        : {}),
       ...options.headers,
     },
   })
 
-  if (response.status === 204) return undefined as T
+  if (response.status === 204) {
+    return undefined as T
+  }
 
   const body = await response.json() as T & { error?: string }
 
   if (!response.ok) {
-    throw new Error(body.error || 'Não foi possível concluir a solicitação.')
+    throw new Error(
+      body.error || 'Não foi possível concluir a solicitação.',
+    )
   }
 
   return body
