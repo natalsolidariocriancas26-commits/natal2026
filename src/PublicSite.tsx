@@ -329,8 +329,11 @@ function ReservationDialog({
         {step === 'done' && reservation && <>
           <span className="success-mark"><Heart size={24} fill="currentColor" /></span>
           <span className="eyebrow">APADRINHAMENTO CONFIRMADO</span>
-          <h2 id="reservation-title">Obrigado, {form.name.split(' ')[0]}.</h2>
-          <p className="dialog-intro">Seu gesto vai fazer parte do Natal de {reservation.children.length === 1 ? 'uma criança' : `${reservation.children.length} crianças`}.</p>
+          <h2 id="reservation-title">Obrigado, {form.name.split(' ')[0]}! ❤️</h2>
+          <p className="dialog-intro">Hoje você escolheu transformar um simples presente em um momento de alegria, carinho e esperança. 🎄🎁</p>
+          <p className="dialog-intro">{reservation.children.length === 1 ? 'Uma criança terá um Natal mais especial porque você decidiu participar.' : `${reservation.children.length} crianças terão um Natal mais especial porque você decidiu participar.`}</p>
+          <p className="dialog-intro">Cada gesto conta. Cada presente carrega carinho. E quando muitas pessoas se unem, pequenos gestos se transformam em grandes histórias.</p>
+          <p className="dialog-intro"><strong>Nossa gratidão por você fazer parte dessa corrente de solidariedade. ❤️</strong></p>
           <div className="reservation-list done-list">
             {reservation.children.map((child) => <div className="reservation-line" key={child.id}>
               <strong>{child.publicCode}</strong>
@@ -340,6 +343,9 @@ function ReservationDialog({
           </div>
           <div className="delivery-summary">
             <span><CalendarDays size={16} /> Entregar até {formatDate(campaign.deliveryDeadline)}</span>
+            <a className="button button-green button-wide" href="https://chat.whatsapp.com/L6O19cdymFEAvwfRD3bE8X" target="_blank" rel="noreferrer">
+              <MessageCircle size={17} /> Entrar no grupo do WhatsApp
+            </a>
             <span><MapPin size={16} /> {campaign.deliveryLocation}</span>
             <span><Gift size={16} /> 1 roupa, 1 par de calçados e 1 brinquedo</span>
           </div>
