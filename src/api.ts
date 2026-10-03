@@ -110,7 +110,6 @@ export async function api<T>(
       throw new Error('Nenhum cartão foi selecionado.')
     }
 
-    // Neste momento o sistema reserva um cartão por vez.
     const cartao = String(childIds[0])
 
     const response = await fetch(APPS_SCRIPT_URL, {
@@ -144,6 +143,30 @@ export async function api<T>(
           publicCode: `NS-${cartao}`,
         },
       ],
+    } as T
+  }
+
+  // CONFIRMAR RESERVA
+  // A reserva já foi gravada na planilha no primeiro envio.
+  if (
+    path.startsWith('/api/reservations/') &&
+    path.endsWith('/confirm') &&
+    options.method === 'POST'
+  ) {
+    return {
+      sucesso: true,
+    } as T
+  }
+
+  // CANCELAR RESERVA
+  // Neste modelo simples, não cancelamos automaticamente a reserva.
+  if (
+    path.startsWith('/api/reservations/') &&
+    path.endsWith('/cancel') &&
+    options.method === 'POST'
+  ) {
+    return {
+      sucesso: true,
     } as T
   }
 
