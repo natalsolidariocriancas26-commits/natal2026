@@ -165,7 +165,7 @@ function ChildCard({
       <div className="child-card-top">
         <span className="child-code">
           <span className="child-tree" aria-hidden="true">🎄</span>
-          🎄
+          {child.publicCode}
         </span>
 
         <span className={`status-pill status-${child.status.toLowerCase()}`}>
