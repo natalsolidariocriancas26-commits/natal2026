@@ -2,23 +2,21 @@ const APPS_SCRIPT_URL =
   'https://script.google.com/macros/s/AKfycbwTwOR8uvV0L2Ony4kb1_XT_5p9Fy7ZCCiBkaFb419qB5C23sFOgG-oTv5EhE1EvTeY/exec'
 
 type SheetRow = [
-  string | number,
-  string,
-  string | number,
-  string | number,
-  string | number,
-  string,
-  string,
-  string,
-  string?
+  string | number, // NS
+  string,          // Nome
+  string,          // Sexo
+  string | number, // Idade
+  string | number, // Roupa
+  string | number, // Calçado
+  string,          // Status
+  string,          // Responsável
+  string?,         // WhatsApp
 ]
 
 export async function api<T>(
   path: string,
   options: RequestInit = {},
 ): Promise<T> {
-
-  // CARREGAR CARTÕES
   if (
     path === '/api/public/campaign' &&
     (!options.method || options.method === 'GET')
@@ -37,45 +35,46 @@ export async function api<T>(
 
     const children = cards
       .filter((row) => row[0] !== '' && row[0] !== undefined)
-      .map((row, index) => {
-        const statusText = String(row[6] || '').toLowerCase()
+      .map((row) => {
+        const ns = String(row[0] || '')
+        const nome = String(row[1] || '')
+        const sexo = String(row[2] || '')
+        const idade = String(row[3] || '')
+        const roupa = String(row[4] || '')
+        const calcado = String(row[5] || '')
+        const statusText = String(row[6] || '').toLowerCase().trim()
 
         let status:
           | 'AVAILABLE'
-          | 'RESERVED'
           | 'SPONSORED'
           | 'RECEIVED'
-          | 'DELIVERED'
 
-        if (statusText.includes('reserv')) {
-          status = 'RESERVED'
-        } else if (
-          statusText.includes('entreg') ||
-          statusText.includes('receb') ||
-          statusText.includes('apadrinh')
-        ) {
+        if (statusText.includes('presente recebido')) {
+          status = 'RECEIVED'
+        } else if (statusText.includes('apadrinh')) {
           status = 'SPONSORED'
         } else {
           status = 'AVAILABLE'
         }
 
         return {
-          id: index + 1,
-          publicCode: `NS-${row[0]}`,
-          genderLabel: String(row[1] || ''),
-          ageLabel: String(row[2] || ''),
+          id: ns,
+          publicCode: ns,
+          name: nome,
+          genderLabel: sexo,
+          ageLabel: idade,
           status,
-          clothingSize: String(row[3] || ''),
-          shoeSize: String(row[4] || ''),
-          toySuggestion: String(row[5] || ''),
+          clothingSize: roupa,
+          shoeSize: calcado,
+          toySuggestion: 'À escolha',
         }
       })
 
     const counts = {
       AVAILABLE: children.filter((child) => child.status === 'AVAILABLE').length,
-      RESERVED: children.filter((child) => child.status === 'RESERVED').length,
+      RESERVED: 0,
       SPONSORED: children.filter((child) => child.status === 'SPONSORED').length,
-      RECEIVED: 0,
+      RECEIVED: children.filter((child) => child.status === 'RECEIVED').length,
       DELIVERED: 0,
     }
 
@@ -98,7 +97,6 @@ export async function api<T>(
     } as T
   }
 
-  // RESERVAR CARTÃO
   if (path === '/api/reservations' && options.method === 'POST') {
     const body = JSON.parse(String(options.body || '{}'))
 
@@ -118,7 +116,7 @@ export async function api<T>(
         'Content-Type': 'text/plain;charset=utf-8',
       },
       body: JSON.stringify({
-        cartao: cartao,
+        cartao,
         responsavel: body.name,
         whatsapp: body.whatsapp,
       }),
@@ -139,15 +137,13 @@ export async function api<T>(
       ).toISOString(),
       children: [
         {
-          id: Number(childIds[0]),
-          publicCode: `NS-${cartao}`,
+          id: cartao,
+          publicCode: cartao,
         },
       ],
     } as T
   }
 
-  // CONFIRMAR RESERVA
-  // A reserva já foi gravada na planilha no primeiro envio.
   if (
     path.startsWith('/api/reservations/') &&
     path.endsWith('/confirm') &&
@@ -158,8 +154,6 @@ export async function api<T>(
     } as T
   }
 
-  // CANCELAR RESERVA
-  // Neste modelo simples, não cancelamos automaticamente a reserva.
   if (
     path.startsWith('/api/reservations/') &&
     path.endsWith('/cancel') &&
@@ -170,7 +164,6 @@ export async function api<T>(
     } as T
   }
 
-  // OUTRAS REQUISIÇÕES
   const response = await fetch(path, {
     ...options,
     credentials: 'same-origin',
