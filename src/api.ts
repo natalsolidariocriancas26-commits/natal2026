@@ -102,14 +102,25 @@ export async function api<T>(
   if (path === '/api/reservations' && options.method === 'POST') {
     const body = JSON.parse(String(options.body || '{}'))
 
+    const childIds = Array.isArray(body.childIds)
+      ? body.childIds
+      : []
+
+    if (childIds.length === 0) {
+      throw new Error('Nenhum cartão foi selecionado.')
+    }
+
+    // Neste momento o sistema reserva um cartão por vez.
+    const cartao = String(childIds[0])
+
     const response = await fetch(APPS_SCRIPT_URL, {
       method: 'POST',
       headers: {
         'Content-Type': 'text/plain;charset=utf-8',
       },
       body: JSON.stringify({
-        cartao: body.cartao,
-        responsavel: body.responsavel,
+        cartao: cartao,
+        responsavel: body.name,
         whatsapp: body.whatsapp,
       }),
     })
@@ -117,12 +128,22 @@ export async function api<T>(
     const result = await response.json()
 
     if (!result.sucesso) {
-      throw new Error(result.mensagem || 'Não foi possível reservar o cartão.')
+      throw new Error(
+        result.mensagem || 'Não foi possível reservar o cartão.'
+      )
     }
 
     return {
-      id: String(body.cartao),
-      status: 'RESERVED',
+      id: cartao,
+      expiresAt: new Date(
+        Date.now() + 30 * 60 * 1000
+      ).toISOString(),
+      children: [
+        {
+          id: Number(childIds[0]),
+          publicCode: `NS-${cartao}`,
+        },
+      ],
     } as T
   }
 
