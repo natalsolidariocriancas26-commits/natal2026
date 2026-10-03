@@ -342,17 +342,30 @@ function ReservationDialog({
             </div>)}
           </div>
           <div className="delivery-summary">
-            <span><CalendarDays size={16} /> Entregar até {formatDate(campaign.deliveryDeadline)}</span>
+            <span><CalendarDays size={16} /> <strong>Data limite para entrega: 30 de novembro de 2026</strong></span>
             <a className="button button-green button-wide" href="https://chat.whatsapp.com/L6O19cdymFEAvwfRD3bE8X" target="_blank" rel="noreferrer">
               <MessageCircle size={17} /> Entrar no grupo do WhatsApp
             </a>
             <span><MapPin size={16} /> {campaign.deliveryLocation}</span>
             <span><Gift size={16} /> 1 roupa, 1 par de calçados e 1 brinquedo</span>
           </div>
-          <a className="button button-whatsapp button-wide" href={whatsAppHref(campaign.deliveryContact, `Olá, ${form.name}! Confirmo meu apadrinhamento no Natal Solidário. Protocolo: ${reservation.children.map((child) => child.publicCode).join(', ')}.`)} target="_blank" rel="noreferrer">
-            <Phone size={17} /> Falar com a organização no WhatsApp
+          <div className="group-welcome-message">
+            <p><strong>💚 Mensagem de boas-vindas</strong></p>
+            <p>🎄❤️ Seja muito bem-vindo(a) ao Natal Solidário 2026!</p>
+            <p>Que alegria ter você conosco nessa corrente de amor e solidariedade. O seu gesto vai ajudar a tornar o Natal de uma criança muito mais especial. 🎁✨</p>
+            <p><strong>📅 DATA LIMITE PARA ENTREGA DO PRESENTE: 30 DE NOVEMBRO DE 2026.</strong></p>
+            <p>Pedimos que o presente seja entregue até essa data para que possamos organizar tudo com carinho e garantir que cada criança receba seu presente no grande dia. ❤️</p>
+            <p>Este grupo será utilizado para receber orientações, avisos da campanha, tirar dúvidas e acompanhar essa corrente de solidariedade.</p>
+            <p><strong>Muito obrigado por fazer parte disso. Juntos, podemos transformar um presente em uma lembrança para a vida toda. 🌟</strong></p>
+          </div>
+          <a className="button button-whatsapp button-wide" href={whatsAppHref(campaign.deliveryContact, `Olá! Acabei de apadrinhar ${reservation.children.map((child) => child.publicCode).join(', ')} no Natal Solidário 2026. 🎄❤️
+
+Data limite para entrega do presente: 30 de novembro de 2026.
+
+Gostaria de receber as orientações para a entrega. Muito obrigado!`)} target="_blank" rel="noreferrer">
+            <Phone size={17} /> Enviar confirmação à organização
           </a>
-          <p className="privacy-note">Uma mensagem pronta será aberta para você enviar. O WhatsApp não envia mensagens automaticamente.</p>
+          <p className="privacy-note">Ao entrar no grupo, a mensagem de boas-vindas acima ficará disponível para você copiar e enviar. O WhatsApp não permite que o site envie mensagens automaticamente.</p>
           <button className="text-button done-close" type="button" onClick={onClose}>Voltar à campanha</button>
         </>}
       </section>
