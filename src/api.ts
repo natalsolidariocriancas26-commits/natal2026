@@ -137,7 +137,7 @@ export async function api<T>(
         donationInfo:
           'Faça parte desta corrente de solidariedade.',
         introduction:
-          'Escolha um cartão, prepare um presente e faça uma criança sorrir.',
+          'Escolha uma ou mais crianças e faça deste Natal uma lembrança para a vida toda.',
         reservationMinutes: 30,
       },
 
