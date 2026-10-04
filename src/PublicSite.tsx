@@ -443,11 +443,6 @@ export default function PublicSite() {
               <span><MapPin size={16} /> Artur Alvim, São Paulo</span>
             </div>
           </div>
-          <div className="hero-visual">
-            <img src={`${import.meta.env.BASE_URL}images/ChatGPT%20Image%2029%20de%20set.%20de%202026,%2021_23_42.png`} alt="Imagem da campanha Natal Solidário" />
-            <div className="visual-caption"><span><Gift size={18} /></span><p>Um kit preparado com carinho<small>Roupa · calçado · brinquedo</small></p></div>
-            <div className="visual-stamp">NATAL<br /><b>2026</b></div>
-          </div>
           <div className="hero-bottom-note"><span>ENTREGA DOS KITS ATÉ</span><strong>{campaign ? formatDate(campaign.deliveryDeadline) : '30 de novembro de 2026'}</strong></div>
         </section>
 
@@ -455,25 +450,6 @@ export default function PublicSite() {
           <div><strong>{loading ? '—' : availableCount}</strong><span>crianças esperando<br />por um padrinho</span></div>
           <div><strong>{loading ? '—' : sponsoredCount}</strong><span>já receberam<br />um padrinho</span></div>
           <p>Um presente pode virar uma lembrança para a vida toda.</p>
-        </section>
-
-        <section className="gift-stories" aria-labelledby="gift-stories-title">
-          <div className="gift-stories-inner">
-            <div className="gift-stories-heading">
-              <div><p className="eyebrow">CARINHO QUE CHEGA EM FORMA DE PRESENTE</p><h2 id="gift-stories-title">Pequenos gestos, grandes sorrisos</h2></div>
-              <p>Brinquedos para imaginar. Roupas para acolher. Um Natal preparado com cuidado.</p>
-            </div>
-            <div className="gift-stories-grid">
-              <figure className="gift-story">
-                <img src={`${import.meta.env.BASE_URL}images/ChatGPT%20Image%2029%20de%20set.%20de%202026,%2017_44_15.png`} alt="A alegria de ganhar um brinquedo" loading="lazy" />
-                <figcaption><strong>A alegria de ganhar um brinquedo</strong><a href="https://www.pexels.com/photo/parents-handing-toys-to-smiling-little-boy-7985454/" target="_blank" rel="noreferrer">Foto: George Pak / Pexels</a></figcaption>
-              </figure>
-              <figure className="gift-story">
-                <img src={`${import.meta.env.BASE_URL}images/ChatGPT%20Image%2029%20de%20set.%20de%202026,%2017_32_28.png`} alt="Roupas entregues com carinho em uma ação solidária" loading="lazy" />
-                <figcaption><strong>Roupas entregues com carinho</strong><a href="https://www.pexels.com/photo/volunteers-handing-clothes-to-children-15311442/" target="_blank" rel="noreferrer">Foto: Akh Taufiq / Pexels</a></figcaption>
-              </figure>
-            </div>
-          </div>
         </section>
 
         <section className="how-section section-wrap" id="como-funciona">
@@ -494,7 +470,6 @@ export default function PublicSite() {
             <div className="section-heading children-heading">
               <div><p className="eyebrow">O PRÓXIMO PRESENTE PODE SER O SEU</p><h2>Escolha uma criança</h2></div>
               <div className="children-heading-side">
-                <img src={`${import.meta.env.BASE_URL}images/ChatGPT%20Image%2029%20de%20set.%20de%202026,%2017_57_01.png`} alt="Crianças participando de uma ação solidária" />
                 <p>Cada criança aparece com as informações necessárias para montar o kit. Crianças apadrinhadas continuam na lista.</p>
               </div>
             </div>
