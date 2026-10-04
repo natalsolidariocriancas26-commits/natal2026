@@ -951,94 +951,174 @@
   }
 
 /* =========================================================
-   NATAL SOLIDÁRIO 2026 — AJUSTES FINAIS
+   NATAL SOLIDÁRIO 2026 — CORREÇÃO FINAL DOS CARTÕES
    ========================================================= */
 
-/* Cartão disponível */
-.child-card:not(.is-unavailable) {
-  background: #f0f8ee;
-  border: 3px solid #5f9658;
-  box-shadow:
-    inset 0 0 0 1px #d8ead3,
-    0 8px 20px #315d2d18;
+/* Os nomes e informações da criança devem permanecer visíveis. */
+.child-details {
+  display: block !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+  padding: 10px 12px 12px !important;
 }
 
-/* Cartão apadrinhado */
-.child-card.is-sponsored {
-  opacity: 1;
-  background: #fff0f1;
-  border: 3px solid #c96b72;
-  box-shadow:
-    inset 6px 0 0 #c96b72,
-    0 8px 20px #7a303518;
+.child-name-row {
+  display: flex !important;
+  align-items: flex-start !important;
+  justify-content: space-between !important;
+  gap: 10px !important;
+  visibility: visible !important;
 }
 
-/* Cartão com presente recebido */
-.child-card.is-unavailable:has(.status-received) {
-  opacity: 1;
-  background: #fffaf0;
-  border: 3px solid #d4a72c;
-  box-shadow:
-    inset 6px 0 0 #d4a72c,
-    0 8px 20px #8a6a1a22;
+.child-name-row > div {
+  display: block !important;
+  min-width: 0 !important;
+  flex: 1 1 auto !important;
+  visibility: visible !important;
 }
 
-/* Etiqueta de presente recebido */
-.status-received {
-  color: #8a6814;
-  border-color: #ead58d;
-  background: #fff5cf;
+.card-label {
+  display: block !important;
+  margin-bottom: 4px !important;
+  color: #7a806f !important;
+  font-size: 8px !important;
+  font-weight: 800 !important;
+  letter-spacing: .7px !important;
+  line-height: 1 !important;
+  visibility: visible !important;
 }
 
-/* Botão de apadrinhar */
-.select-child {
-  min-height: 42px;
-  justify-content: center;
-  padding: 0 10px;
-  border: 1px solid #cbd9c5;
-  border-radius: 4px;
-  background: #f1f6ed;
-  text-align: center;
+.child-details h3 {
+  display: block !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+  margin: 0 !important;
+  color: var(--pine-dark) !important;
+  font-family: var(--serif) !important;
+  font-size: 21px !important;
+  font-weight: 700 !important;
+  line-height: 1.15 !important;
+  overflow-wrap: anywhere !important;
 }
 
-.select-child:hover {
-  color: #fff;
-  border-color: var(--pine);
-  background: var(--pine);
+.child-smile {
+  display: block !important;
+  flex: 0 0 auto !important;
+  visibility: visible !important;
 }
 
-.select-child.selected {
-  color: #fff;
-  border-color: var(--red);
-  background: var(--red);
+/* Informações da criança */
+.child-meta {
+  display: grid !important;
+  grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  gap: 7px !important;
+  margin-top: 9px !important;
+  visibility: visible !important;
 }
 
-/* =========================================================
-   SEM FOTOS NOS CARTÕES
-   ========================================================= */
+.child-meta span {
+  display: flex !important;
+  flex-direction: column !important;
+  min-width: 0 !important;
+  padding: 7px 8px !important;
+  border: 1px solid #d8e2d3 !important;
+  border-radius: 4px !important;
+  background: #f8faf5 !important;
+  color: #26382b !important;
+  font-size: 11px !important;
+  font-weight: 700 !important;
+  line-height: 1.25 !important;
+  visibility: visible !important;
+}
 
+.child-meta strong {
+  display: block !important;
+  margin-bottom: 3px !important;
+  color: #75816f !important;
+  font-size: 8px !important;
+  font-weight: 800 !important;
+  letter-spacing: .7px !important;
+  text-transform: uppercase !important;
+}
+
+/* Roupa e calçado */
+.gift-specs {
+  display: grid !important;
+  grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  visibility: visible !important;
+}
+
+/* Brinquedo */
+.child-toy {
+  display: flex !important;
+  visibility: visible !important;
+}
+
+/* Sem fotografias */
 .child-portrait img,
 .children-heading-side img,
 .gift-story img {
   display: none !important;
 }
 
-/* Mantém o espaço dos cartões sem exibir fotografia */
 .child-portrait {
-  min-height: 100px;
+  min-height: 70px !important;
 }
 
-/* =========================================================
-   RESPONSIVO
-   ========================================================= */
+/* Cores dos cartões */
+.child-card:not(.is-unavailable) {
+  background: #f0f8ee !important;
+  border: 3px solid #5f9658 !important;
+}
 
+.child-card.is-sponsored {
+  opacity: 1 !important;
+  background: #fff0f1 !important;
+  border: 3px solid #c96b72 !important;
+}
+
+.child-card.is-unavailable:has(.status-received) {
+  opacity: 1 !important;
+  background: #fffaf0 !important;
+  border: 3px solid #d4a72c !important;
+}
+
+.status-received {
+  color: #8a6814 !important;
+  border-color: #ead58d !important;
+  background: #fff5cf !important;
+}
+
+/* Celular */
 @media (max-width: 760px) {
-  .child-portrait {
-    min-height: 110px;
+  .child-details {
+    padding: 10px !important;
   }
 
-  .select-child {
-    min-height: 46px;
-    font-size: 12px;
+  .child-details h3 {
+    font-size: 20px !important;
+  }
+
+  .child-meta {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  }
+}
+
+@media (max-width: 430px) {
+  .child-details h3 {
+    font-size: 19px !important;
+  }
+
+  .child-meta {
+    gap: 5px !important;
+  }
+
+  .child-meta span {
+    padding: 6px !important;
+    font-size: 10px !important;
+  }
+
+  .gift-specs {
+    font-size: 10px !important;
   }
 }
