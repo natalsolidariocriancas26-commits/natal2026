@@ -9,8 +9,9 @@ type SheetRow = [
   string | number, // Roupa
   string | number, // Calçado
   string,          // Status
-  string,          // Responsável
+  string,          // Responsável (nome curto, exibido no site)
   string?,         // WhatsApp
+  string?,         // Responsável (nome completo, uso interno)
 ]
 
 export async function api<T>(
@@ -54,6 +55,7 @@ export async function api<T>(
         const idade = String(row[3] ?? '').trim()
         const roupa = String(row[4] ?? '').trim()
         const calcado = String(row[5] ?? '').trim()
+        const responsavel = String(row[7] ?? '').trim()
 
         /*
          * Normaliza o status vindo da planilha.
@@ -100,6 +102,7 @@ export async function api<T>(
           clothingSize: roupa,
           shoeSize: calcado,
           toySuggestion: 'À escolha',
+          sponsorName: status === 'AVAILABLE' ? '' : responsavel,
         }
       })
 
@@ -132,7 +135,7 @@ export async function api<T>(
         eventTime: '12:00',
         deliveryDeadline: '2026-11-30',
         deliveryLocation:
-          'ADEBANKE Espaço Cultural, Artur Alvim',
+          'ADEBANKE Espaço Cultural, Rua Durand, 175 - Artur Alvim',
         deliveryContact: '5511945963712',
         donationInfo:
           'Faça parte desta corrente de solidariedade.',
@@ -179,9 +182,12 @@ export async function api<T>(
     }
 
     /*
-     * O sistema atual trabalha com um cartão por apadrinhamento.
+     * Todos os cartões selecionados vão em uma única requisição.
+     * "cartao" continua sendo enviado para compatibilidade com
+     * versões antigas do Apps Script, que só liam um cartão.
      */
-    const cartao = String(childIds[0])
+    const cartoes = childIds.map((id: unknown) => String(id))
+    const cartao = cartoes[0]
 
     const response = await fetch(APPS_SCRIPT_URL, {
       method: 'POST',
@@ -197,7 +203,8 @@ export async function api<T>(
 
       body: JSON.stringify({
         cartao,
-        responsavel: body.name,
+        cartoes,
+        responsavel: String(body.name ?? '').trim(),
         whatsapp: body.whatsapp,
       }),
     })
@@ -215,22 +222,26 @@ export async function api<T>(
      * Mantemos este formato porque o PublicSite.tsx
      * espera uma resposta de reserva.
      *
-     * Na prática, o cartão já foi marcado como
+     * Na prática, os cartões já foram marcados como
      * "Apadrinhada" na planilha pelo Apps Script.
+     * O Apps Script novo devolve em "cartoes" quais foram gravados;
+     * o antigo só grava o primeiro.
      */
+    const gravados: string[] = Array.isArray(result.cartoes)
+      ? result.cartoes.map((id: unknown) => String(id))
+      : [cartao]
+
     return {
-      id: cartao,
+      id: gravados.join(','),
 
       expiresAt: new Date(
         Date.now() + 30 * 60 * 1000,
       ).toISOString(),
 
-      children: [
-        {
-          id: cartao,
-          publicCode: cartao,
-        },
-      ],
+      children: gravados.map((id) => ({
+        id,
+        publicCode: id,
+      })),
     } as T
   }
 

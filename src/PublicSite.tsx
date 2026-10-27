@@ -71,7 +71,7 @@ function whatsAppHref(phone: string, text: string) {
   return `https://wa.me/${phone}?text=${encodeURIComponent(text)}`
 }
 
-// endereço oficial do site, usado nos convites e no botão Copiar link
+// abre o endereço no Google Maps
 function mapsHref(address: string) {
   return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(`${address}, São Paulo - SP`)}`
 }
@@ -82,6 +82,7 @@ function AddressLines({ address }: { address: string }) {
   return <>{place}{street && <><br />{street}</>}</>
 }
 
+// endereço oficial do site, usado nos convites e no botão Copiar link
 const SITE_URL = 'https://natalsolidariocriancas26-commits.github.io/natal2026/'
 
 function CampaignShare() {

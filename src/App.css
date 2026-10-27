@@ -1935,3 +1935,41 @@
     font-size: 18px;
   }
 }
+
+/* Nome de quem apadrinhou */
+.unavailable-note .sponsor-name {
+  display: block;
+  margin-top: 5px;
+  color: #000;
+  font-size: 11px;
+  font-weight: 800;
+  text-transform: uppercase;
+  overflow-wrap: anywhere;
+}
+
+.unavailable-note .sponsor-name strong {
+  font-weight: 800;
+}
+
+/* Endereço clicável (abre no Google Maps) */
+.address-link {
+  color: inherit;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.address-link:hover {
+  color: var(--red);
+}
+
+.delivery-summary .address-link {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  font-size: 10px;
+  line-height: 1.5;
+}
+
+.delivery-summary .address-link span {
+  display: block;
+}
