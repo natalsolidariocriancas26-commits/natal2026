@@ -43,6 +43,7 @@ type Child = {
   pantsSize?: string
   shoeSize?: string
   toySuggestion?: string
+  sponsorName?: string
 }
 
 type PublicData = {
@@ -71,6 +72,16 @@ function whatsAppHref(phone: string, text: string) {
 }
 
 // endereço oficial do site, usado nos convites e no botão Copiar link
+function mapsHref(address: string) {
+  return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(`${address}, São Paulo - SP`)}`
+}
+
+function AddressLines({ address }: { address: string }) {
+  const [place, ...rest] = address.split(', ')
+  const street = rest.join(', ')
+  return <>{place}{street && <><br />{street}</>}</>
+}
+
 const SITE_URL = 'https://natalsolidariocriancas26-commits.github.io/natal2026/'
 
 function CampaignShare() {
@@ -231,7 +242,10 @@ function ChildCard({ child, selected, onToggle }: { child: Child; selected: bool
           <button className={selected ? 'select-child selected' : 'select-child'} type="button" onClick={() => onToggle(child.id)} aria-pressed={selected}>
             {selected ? <><Check size={16} /> Selecionada</> : <>Quero apadrinhar <ArrowRight size={15} /></>}
           </button>
-        ) : <p className="unavailable-note">{sponsored ? 'Obrigado a quem já apadrinhou esta criança.' : 'Agradecemos por fazer parte desta corrente.'}</p>}
+        ) : <p className="unavailable-note">
+          {sponsored ? 'Obrigado a quem já apadrinhou esta criança.' : 'Agradecemos por fazer parte desta corrente.'}
+          {sponsored && child.sponsorName && <span className="sponsor-name">Padrinho/Madrinha: <strong>{child.sponsorName}</strong></span>}
+        </p>}
       </div>
     </article>
   )
@@ -376,7 +390,7 @@ function ReservationDialog({
             <MessageCircle size={18} /> Entrar no grupo do WhatsApp
           </a>}
           <div className="delivery-summary">
-            <span><MapPin size={16} /> {campaign.deliveryLocation}</span>
+            <a className="address-link" href={mapsHref(campaign.deliveryLocation)} target="_blank" rel="noreferrer"><MapPin size={16} /> <span><AddressLines address={campaign.deliveryLocation} /></span></a>
             <span><Gift size={16} /> 1 roupa, 1 par de calçados e 1 brinquedo</span>
           </div>
           <a className="button button-whatsapp button-wide" href={whatsAppHref(campaign.deliveryContact, `Olá, ${form.name}! Confirmo meu apadrinhamento no Natal Solidário. Protocolo: ${reservation.children.map((child) => child.publicCode).join(', ')}.`)} target="_blank" rel="noreferrer">
@@ -594,7 +608,7 @@ export default function PublicSite() {
           <div className="delivery-copy"><p className="eyebrow">ANOTE NA AGENDA</p><h2>Um encontro para celebrar juntos.</h2><p>Prepare o kit com os três itens e entregue à equipe da campanha antes do prazo.</p></div>
           <div className="delivery-details">
             <p><CalendarDays size={26} /><span><small>ENTREGA ATÉ</small>{campaign ? formatDate(campaign.deliveryDeadline) : '30 de novembro de 2026'}</span></p>
-            <p><MapPin size={26} /><span><small>LOCAL</small>{campaign?.deliveryLocation || 'ADEBANKE Espaço Cultural, Artur Alvim'}</span></p>
+            <p><MapPin size={26} /><span><small>LOCAL</small><a className="address-link" href={mapsHref(campaign?.deliveryLocation || 'ADEBANKE Espaço Cultural, Rua Durand, 175 - Artur Alvim')} target="_blank" rel="noreferrer"><AddressLines address={campaign?.deliveryLocation || 'ADEBANKE Espaço Cultural, Rua Durand, 175 - Artur Alvim'} /></a></span></p>
             <p><Clock3 size={26} /><span><small>ENCONTRO DE NATAL</small>{campaign ? `${formatDate(campaign.eventDate)} · ${campaign.eventTime}` : '19 de dezembro · 12:00'}</span></p>
           </div>
         </section>
